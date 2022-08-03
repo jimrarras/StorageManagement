@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,87 @@ namespace StorageManagement
         {
             InitializeComponent();
             load_csv();
+
+            foreach (DataGridViewColumn column in dataGridView1.Columns)
+            {
+                column.SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
         }
+
+        //drag n drop
+
+        private Rectangle dragBoxFromMouseDown;
+        private int rowIndexFromMouseDown;
+        private int rowIndexOfItemUnderMouseToDrop;
+
+        private void dataGridView1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                // If the mouse moves outside the rectangle, start the drag.
+                if (dragBoxFromMouseDown != Rectangle.Empty &&
+                !dragBoxFromMouseDown.Contains(e.X, e.Y))
+                {
+                    // Proceed with the drag and drop, passing in the list item.                    
+                    DragDropEffects dropEffect = dataGridView1.DoDragDrop(
+                          dataGridView1.Rows[rowIndexFromMouseDown],
+                          DragDropEffects.Move);
+                }
+            }
+        }
+
+        private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Get the index of the item the mouse is below.
+            rowIndexFromMouseDown = dataGridView1.HitTest(e.X, e.Y).RowIndex;
+
+            if (rowIndexFromMouseDown != -1)
+            {
+                // Remember the point where the mouse down occurred. 
+                // The DragSize indicates the size that the mouse can move 
+                // before a drag event should be started.                
+                Size dragSize = SystemInformation.DragSize;
+
+                // Create a rectangle using the DragSize, with the mouse position being
+                // at the center of the rectangle.
+                dragBoxFromMouseDown = new Rectangle(
+                          new Point(
+                            e.X - (dragSize.Width / 2),
+                            e.Y - (dragSize.Height / 2)),
+                      dragSize);
+            }
+            else
+                // Reset the rectangle if the mouse is not over an item in the ListBox.
+                dragBoxFromMouseDown = Rectangle.Empty;
+        }
+
+        private void dataGridView1_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void dataGridView1_DragDrop(object sender, DragEventArgs e)
+        {
+            // The mouse locations are relative to the screen, so they must be 
+            // converted to client coordinates.
+            Point clientPoint = dataGridView1.PointToClient(new Point(e.X, e.Y));
+
+            // Get the row index of the item the mouse is below. 
+            rowIndexOfItemUnderMouseToDrop = dataGridView1.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
+
+            // If the drag operation was a move then remove and insert the row.
+            if (e.Effect == DragDropEffects.Move && rowIndexOfItemUnderMouseToDrop!=-1 && rowIndexOfItemUnderMouseToDrop!= rowIndexFromMouseDown)
+            {
+                DataGridViewRow rowToMove = e.Data.GetData(typeof(DataGridViewRow)) as DataGridViewRow;
+                DataRow finalrow = dt.NewRow();
+                finalrow.ItemArray = (rowToMove.DataBoundItem as DataRowView).Row.ItemArray;
+                dt.Rows.RemoveAt(rowIndexFromMouseDown);
+                dt.Rows.InsertAt( finalrow, rowIndexOfItemUnderMouseToDrop);
+                dataGridView1.DataSource = dt;
+            }
+        }
+
+        //
 
         private void load_csv()
         {
@@ -91,6 +172,8 @@ namespace StorageManagement
 
         private void button3_Click(object sender, EventArgs e)  //apothikeusi
         {
+            (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = "";
+            (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = "";
             bool fileError = false;
 
                 if (File.Exists("Inventory.csv") && File.Exists("Report.csv"))
@@ -188,6 +271,8 @@ namespace StorageManagement
 
         private void button4_Click(object sender, EventArgs e)  //eksagwgi
         {
+            (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = "";
+            (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = "";
             if (dataGridView1.Rows.Count > 0 && dataGridView2.Rows.Count>0)
             {
                 SaveFileDialog sfd = new SaveFileDialog();
@@ -599,6 +684,38 @@ namespace StorageManagement
                 }
             }
         }
+
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (new StackTrace().GetFrames().Any(x => x.GetMethod().Name == "Close")) //close
+            {
+                var res = MessageBox.Show(this, "Αποθήκευση των στοιχείων πριν την έξοδο;", "Exit",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if (res == DialogResult.Yes)
+                {
+                    button3.PerformClick();
+                }
+                else if (res == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
+            else  //alt f4 or X
+            {
+                var res2 = MessageBox.Show(this, "Αποθήκευση των στοιχείων πριν την έξοδο;", "Exit",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if (res2 == DialogResult.Yes)
+                {
+                    button3.PerformClick();
+                }
+                else if(res2 == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+
     } 
  }
 

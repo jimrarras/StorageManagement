@@ -1,0 +1,5 @@
+D:\StorageManagement.exe
+D:\StorageManagement.dll
+D:\StorageManagement.deps.json
+D:\StorageManagement.runtimeconfig.json
+D:\StorageManagement.pdb

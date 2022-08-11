@@ -129,10 +129,12 @@ namespace StorageManagement
             if (dt.Rows.Count > 0)
             {
                 dataGridView1.DataSource = dt;
-                for(int k=0; k<dataGridView1.Columns.Count; k++)
+                dataGridView1.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                for (int k=1; k<dataGridView1.Columns.Count; k++)
                 {
-                    dataGridView1.Columns[k].MinimumWidth = 150;
+                    dataGridView1.Columns[k].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
+                
             }
 
             
@@ -163,9 +165,10 @@ namespace StorageManagement
             if (dt2.Rows.Count > 0)
             {
                 dataGridView2.DataSource = dt2;
-                for (int k = 0; k < dataGridView2.Columns.Count; k++)
+                dataGridView2.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                for (int k = 1; k < dataGridView2.Columns.Count; k++)
                 {
-                    dataGridView2.Columns[k].MinimumWidth = 150;
+                    dataGridView2.Columns[k].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
             }
         }
@@ -385,6 +388,8 @@ namespace StorageManagement
                     }
                 }
             }
+
+            printDocument1.Print();
         }
 
         private void button1_Click(object sender, EventArgs e) //eisagwgi me barcode
@@ -549,7 +554,6 @@ namespace StorageManagement
                     row[1] = x2;
                     row[2] = x3;
                     row[3] = x4;
-
                     dt.Rows.Add(row);
                 }
                     DateTime time = DateTime.Now;
@@ -666,7 +670,7 @@ namespace StorageManagement
         {
             if (tabControl1.SelectedTab.Name == "tabPage1")
                 if (textBox3.Text != "") { 
-                    (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = string.Format("BARCODE = '{0}' OR DESCRIPTION = '{0}'", textBox3.Text);
+                    (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = string.Format("BARCODE LIKE '%{0}%' OR DESCRIPTION LIKE '%{0}%'", textBox3.Text);
                 }
                 else
                 {
@@ -676,7 +680,7 @@ namespace StorageManagement
             {
                 if (textBox3.Text != "")
                 {
-                    (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = string.Format("BARCODE = '{0}' OR DATE = '{0}'", textBox3.Text);
+                    (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = string.Format("BARCODE LIKE '%{0}%' OR DATE LIKE '%{0}%'", textBox3.Text);
                 }
                 else
                 {
@@ -716,6 +720,42 @@ namespace StorageManagement
             }
         }
 
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
+            {
+                string desc = dataGridView1.Rows[i].Cells[2].Value.ToString();
+                if (desc.Contains("perCP")) //mpornto
+                {
+                    DataGridViewCellStyle style = new DataGridViewCellStyle();
+                    style.BackColor = Color.OrangeRed;
+                    style.ForeColor = Color.White;
+                    dataGridView1.Rows[i].Cells[2].Style = style;
+
+                }
+                else if (desc.Contains("PE")) //kokkino
+                {
+                    DataGridViewCellStyle style = new DataGridViewCellStyle();
+                    style.BackColor = Color.Red;
+                    style.ForeColor = Color.White;
+                    dataGridView1.Rows[i].Cells[2].Style = style;
+                }
+                else if (desc.Contains("FITC")) //prasino
+                {
+                    DataGridViewCellStyle style = new DataGridViewCellStyle();
+                    style.BackColor = Color.DarkGreen;
+                    style.ForeColor = Color.White;
+                    dataGridView1.Rows[i].Cells[2].Style = style;
+                }
+                else //
+                {
+                    DataGridViewCellStyle style = new DataGridViewCellStyle();
+                    style.BackColor = Color.White;
+                    style.ForeColor = Color.Black;
+                    dataGridView1.Rows[i].Cells[2].Style = style;
+                }
+            }
+        }
     } 
  }
 

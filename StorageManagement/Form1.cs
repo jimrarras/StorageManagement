@@ -2,10 +2,12 @@
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using PicoXLSX;
 
 namespace StorageManagement
 {
@@ -94,6 +96,10 @@ namespace StorageManagement
                 finalrow.ItemArray = (rowToMove.DataBoundItem as DataRowView).Row.ItemArray;
                 dt.Rows.RemoveAt(rowIndexFromMouseDown);
                 dt.Rows.InsertAt( finalrow, rowIndexOfItemUnderMouseToDrop);
+                for (int i = 1; (i - 1) < dataGridView1.Rows.Count; i++)
+                {
+                    dataGridView1.Rows[i - 1].Cells[0].Value = i;
+                }
                 dataGridView1.DataSource = dt;
             }
         }
@@ -186,7 +192,7 @@ namespace StorageManagement
                         File.Delete("Inventory.csv");
                         File.Delete("Report.csv");
                     }
-                    catch (IOException ex)
+                    catch (System.IO.IOException ex)
                     {
                         fileError = true;
                         MessageBox.Show("Δεν ήταν δυνατό να αποθηκευτεί το αρχείο." + ex.Message);
@@ -272,124 +278,119 @@ namespace StorageManagement
                 }
         }
 
+        private void exportexcelgrid1(string param)
+        {
+            Workbook workbook = new Workbook(param, "Inventory");
+            string x = workbook.CurrentWorksheet.MergeCells(new Cell.Range(new PicoXLSX.Cell.Address(0, 0), new PicoXLSX.Cell.Address(3, 0)));
+            workbook.WS.Value("Καταγραφή Αποθήκης " + DateTime.Now.ToString("dd/MM/yyyy"), Style.BasicStyles.Bold);
+            workbook.WS.Down();
+            workbook.WS.Down();
+            for (int i = 1; i < dataGridView1.Columns.Count + 1; i++)
+            {
+                Style style = new Style();
+                style.CurrentBorder = Style.BasicStyles.BorderFrame.CurrentBorder;
+                style.CurrentFont = Style.BasicStyles.Bold.CurrentFont;
+                workbook.WS.Value(dataGridView1.Columns[i - 1].HeaderText, style);
+            }
+            workbook.WS.Down();
+            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            {
+                for (int j = 0; j < dataGridView1.Columns.Count; j++)
+                {
+                    workbook.WS.Value(dataGridView1.Rows[i].Cells[j].Value.ToString(), Style.BasicStyles.BorderFrame);
+                }
+                workbook.WS.Down();
+            }
+            workbook.CurrentWorksheet.SetColumnWidth(0, 7);
+            workbook.CurrentWorksheet.SetColumnWidth(1, 30);
+            workbook.CurrentWorksheet.SetColumnWidth(2, 35);
+            workbook.CurrentWorksheet.SetColumnWidth(3, 10);
+            workbook.Save();
+        }
+
+        private void exportexcelgrid2(string param)
+        {
+            Workbook workbook = new Workbook(param, "Report");
+            string x = workbook.CurrentWorksheet.MergeCells(new Cell.Range(new PicoXLSX.Cell.Address(0, 0), new PicoXLSX.Cell.Address(3, 0)));
+            workbook.WS.Value("Αναφορά Κινήσεων Αποθήκης " + DateTime.Now.ToString("dd/MM/yyyy"), Style.BasicStyles.Bold);
+            workbook.WS.Down();
+            workbook.WS.Down();
+            for (int i = 1; i < dataGridView2.Columns.Count + 1; i++)
+            {
+                Style style = new Style();
+                style.CurrentBorder = Style.BasicStyles.BorderFrame.CurrentBorder;
+                style.CurrentFont = Style.BasicStyles.Bold.CurrentFont;
+                workbook.WS.Value(dataGridView2.Columns[i - 1].HeaderText, style);
+            }
+            workbook.WS.Down();
+            for (int i = 0; i < dataGridView2.Rows.Count - 1; i++)
+            {
+                for (int j = 0; j < dataGridView2.Columns.Count; j++)
+                {
+                    workbook.WS.Value(dataGridView2.Rows[i].Cells[j].Value.ToString(), Style.BasicStyles.BorderFrame);
+                }
+                workbook.WS.Down();
+            }
+            workbook.CurrentWorksheet.SetColumnWidth(0, 7);
+            workbook.CurrentWorksheet.SetColumnWidth(1, 12);
+            workbook.CurrentWorksheet.SetColumnWidth(2, 10);
+            workbook.CurrentWorksheet.SetColumnWidth(3, 22);
+            workbook.CurrentWorksheet.SetColumnWidth(4, 30);
+            workbook.Save();
+        }
+
         private void button4_Click(object sender, EventArgs e)  //eksagwgi
         {
             (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = "";
             (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = "";
-            if (dataGridView1.Rows.Count > 0 && dataGridView2.Rows.Count>0)
+
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "XLSX (*.xlsx)|*.xlsx";
+
+            if (tabControl1.SelectedTab.Name == "tabPage1")
             {
-                SaveFileDialog sfd = new SaveFileDialog();
-                sfd.Filter = "CSV (*.csv)|*.csv";
-
-                if (tabControl1.SelectedTab.Name == "tabPage1")
+                sfd.FileName = "Inventory.xlsx";
+            }
+            else
+            {
+                sfd.FileName = "Report.xlsx";
+            }
+            bool fileError = false;
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                if (File.Exists(sfd.FileName))
                 {
-                    sfd.FileName = "Inventory.csv";
-                }
-                else
-                {
-                    sfd.FileName = "Report.csv";
-                }
-                bool fileError = false;
-                if (sfd.ShowDialog() == DialogResult.OK)
-                {
-                    if (File.Exists(sfd.FileName))
+                    try
                     {
-                        try
-                        {
-                            File.Delete(sfd.FileName);
-                        }
-                        catch (IOException ex)
-                        {
-                            fileError = true;
-                            MessageBox.Show("Δεν ήταν δυνατό να αποθηκευτεί το αρχείο." + ex.Message);
-                        }
+                        File.Delete(sfd.FileName);
                     }
-                    if (!fileError)
+                    catch (System.IO.IOException ex)
                     {
-                        try
+                        fileError = true;
+                        MessageBox.Show("Δεν ήταν δυνατό να αποθηκευτεί το αρχείο." + ex.Message);
+                    }
+                }
+                if (!fileError)
+                {
+                    try
+                    {
+                        if (tabControl1.SelectedTab.Name == "tabPage1")
                         {
-                            int columnCount = dataGridView1.Columns.Count;
-                            int columnCount2 = dataGridView2.Columns.Count;
-                            string columnNames = "";
-                            string columnNames2 = "";
-                            string[] outputCsv = new string[dataGridView1.Rows.Count + 1];
-                            string[] outputCsv2 = new string[dataGridView2.Rows.Count + 1];
-                            for (int i = 0; i < columnCount; i++)
-                            {
-                                if (i == columnCount - 1)
-                                {
-                                    columnNames += dataGridView1.Columns[i].HeaderText.ToString();
-                                }
-                                else
-                                {
-                                    columnNames += dataGridView1.Columns[i].HeaderText.ToString() + ",";
-                                }
-                            }
-                            outputCsv[0] += columnNames;
-
-                            for (int i = 1; (i-1) < dataGridView1.Rows.Count; i++)
-                            {
-                                for (int j = 0; j < columnCount; j++)
-                                {
-                                    if (j == columnCount - 1)
-                                    {
-                                        outputCsv[i] += dataGridView1.Rows[i - 1].Cells[j].Value.ToString();
-                                    }
-                                    else
-                                    {
-                                        outputCsv[i] += dataGridView1.Rows[i - 1].Cells[j].Value.ToString() + ",";
-                                    }
-                                }
-                            }
-
-                            for (int i = 0; i < columnCount2; i++)
-                            {
-                                if (i == columnCount2 - 1)
-                                {
-                                    columnNames2 += dataGridView2.Columns[i].HeaderText.ToString();
-                                }
-                                else
-                                {
-                                    columnNames2 += dataGridView2.Columns[i].HeaderText.ToString() + ",";
-                                }
-                            }
-                            outputCsv2[0] += columnNames2;
-
-                            for (int i = 1; (i-1) < dataGridView2.Rows.Count; i++)
-                            {
-                                for (int j = 0; j < columnCount2; j++)
-                                {
-                                    if (j == columnCount2 - 1)
-                                    {
-                                        outputCsv2[i] += dataGridView2.Rows[i - 1].Cells[j].Value.ToString();
-                                    }
-                                    else
-                                    {
-                                        outputCsv2[i] += dataGridView2.Rows[i - 1].Cells[j].Value.ToString() + ",";
-                                    }
-                                }
-                            }
-                            
-                            if (tabControl1.SelectedTab.Name == "tabPage1") {
-                                File.WriteAllLines(sfd.FileName, outputCsv, Encoding.UTF8);
-                                File.WriteAllLines("Inventory.csv", outputCsv, Encoding.UTF8); //save changes in the package
-                            }
-                            else
-                            {
-                                File.WriteAllLines(sfd.FileName, outputCsv2, Encoding.UTF8);
-                                File.WriteAllLines("Report.csv", outputCsv2, Encoding.UTF8); //save changes in the package
-                            }
-                            MessageBox.Show("Η αποθήκευση των αλλαγών ήταν επιτυχής", "Info");
+                            exportexcelgrid1(sfd.FileName);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            MessageBox.Show("Error :" + ex.Message);
+                            exportexcelgrid2(sfd.FileName);
                         }
+                        MessageBox.Show("Η εξαγωγή ήταν επιτυχής", "Info");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error :" + ex.Message);
                     }
                 }
             }
-
-            printDocument1.Print();
         }
 
         private void button1_Click(object sender, EventArgs e) //eisagwgi me barcode
@@ -406,7 +407,7 @@ namespace StorageManagement
                 try {
                     itm_num = (int) numericUpDown1.Value;
                 }
-                catch (FormatException)
+                catch (System.FormatException)
                 {
                     itm_num = -1;
                     MessageBox.Show("Παρακαλώ εισάγετε σωστό αριθμό τεμαχίων");
@@ -458,7 +459,7 @@ namespace StorageManagement
                 {
                     itm_num = (int) numericUpDown1.Value;
                 }
-                catch (FormatException)
+                catch (System.FormatException)
                 {
                     itm_num = -1;
                     MessageBox.Show("Παρακαλώ εισάγετε σωστό αριθμό τεμαχίων");

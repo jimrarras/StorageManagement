@@ -128,7 +128,7 @@ namespace StorageManagement
             // button3
             // 
             this.button3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.button3.Location = new System.Drawing.Point(1052, 368);
+            this.button3.Location = new System.Drawing.Point(995, 368);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(105, 44);
             this.button3.TabIndex = 3;
@@ -139,7 +139,7 @@ namespace StorageManagement
             // button4
             // 
             this.button4.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.button4.Location = new System.Drawing.Point(1051, 434);
+            this.button4.Location = new System.Drawing.Point(1106, 368);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(105, 44);
             this.button4.TabIndex = 4;
@@ -289,7 +289,7 @@ namespace StorageManagement
             // 
             // button9
             // 
-            this.button9.Location = new System.Drawing.Point(1070, 572);
+            this.button9.Location = new System.Drawing.Point(1064, 575);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(75, 23);
             this.button9.TabIndex = 17;
@@ -308,10 +308,6 @@ namespace StorageManagement
             0,
             0,
             0});
-            // 
-            // printDocument1
-            // 
-            
             // 
             // Form1
             // 

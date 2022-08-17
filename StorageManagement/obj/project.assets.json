@@ -1,11 +1,77 @@
 {
   "version": 3,
   "targets": {
-    "net6.0-windows7.0": {}
+    "net6.0-windows7.0": {
+      "PicoXLSX/2.11.5": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Packaging": "4.7.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/PicoXLSX .NET Standard.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/PicoXLSX .NET Standard.dll": {}
+        }
+      },
+      "System.IO.Packaging/4.7.0": {
+        "type": "package",
+        "compile": {
+          "ref/netstandard2.0/System.IO.Packaging.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.IO.Packaging.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "PicoXLSX/2.11.5": {
+      "sha512": "VaIMn/TD8LS8iwx8ZgdM4S+K+1yP37ht5tQMGfSZd4ttlQzJ/g8AVwXB3ilUAvyYmp3r95xzmpcELtK08RLbCA==",
+      "type": "package",
+      "path": "picoxlsx/2.11.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "PicoXLSX.png",
+        "lib/net45/PicoXLSX .NET Standard.dll",
+        "lib/netstandard2.0/PicoXLSX .NET Standard.dll",
+        "picoxlsx.2.11.5.nupkg.sha512",
+        "picoxlsx.nuspec"
+      ]
+    },
+    "System.IO.Packaging/4.7.0": {
+      "sha512": "9VV4KAbgRQZ79iEoG40KIeZy38O30oWwewScAST879+oki8g/Wa2HXZQgrhDDxQM4GkP1PnRJll05NMiVPbYAw==",
+      "type": "package",
+      "path": "system.io.packaging/4.7.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net46/System.IO.Packaging.dll",
+        "lib/net46/System.IO.Packaging.xml",
+        "lib/netstandard1.3/System.IO.Packaging.dll",
+        "lib/netstandard1.3/System.IO.Packaging.xml",
+        "lib/netstandard2.0/System.IO.Packaging.dll",
+        "lib/netstandard2.0/System.IO.Packaging.xml",
+        "ref/net46/System.IO.Packaging.dll",
+        "ref/net46/System.IO.Packaging.xml",
+        "ref/netstandard1.3/System.IO.Packaging.dll",
+        "ref/netstandard1.3/System.IO.Packaging.xml",
+        "ref/netstandard2.0/System.IO.Packaging.dll",
+        "ref/netstandard2.0/System.IO.Packaging.xml",
+        "system.io.packaging.4.7.0.nupkg.sha512",
+        "system.io.packaging.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net6.0-windows7.0": []
+    "net6.0-windows7.0": [
+      "PicoXLSX >= 2.11.5"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\jimra\\.nuget\\packages\\": {}
@@ -45,6 +111,12 @@
     "frameworks": {
       "net6.0-windows7.0": {
         "targetAlias": "net6.0-windows",
+        "dependencies": {
+          "PicoXLSX": {
+            "target": "Package",
+            "version": "[2.11.5, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

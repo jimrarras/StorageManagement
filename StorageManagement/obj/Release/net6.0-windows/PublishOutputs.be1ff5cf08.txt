@@ -1,0 +1,6 @@
+C:\Users\jimra\Desktop\StorageManagement\StorageManagement.exe
+C:\Users\jimra\Desktop\StorageManagement\StorageManagement.dll
+C:\Users\jimra\Desktop\StorageManagement\StorageManagement.deps.json
+C:\Users\jimra\Desktop\StorageManagement\StorageManagement.runtimeconfig.json
+C:\Users\jimra\Desktop\StorageManagement\StorageManagement.pdb
+C:\Users\jimra\Desktop\StorageManagement\PicoXLSX .NET Standard.dll

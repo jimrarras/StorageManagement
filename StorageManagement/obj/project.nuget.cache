@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "eDjCkenkTUjye60LNAFdtTjmRIyyuzrmTbCi2QxNW5C95bpbWXRQAjwqb383dVq4j6LjAcF67+ZI/E85okoIHA==",
+  "dgSpecHash": "rMHOTFtmZxX6bp0IgI+znxuuxVWwANI+DDhdwrbExC8wtGvgamgzRPGO44vCKoXOo+QFusejk0Wtsu0cgiaBTA==",
   "success": true,
   "projectFilePath": "C:\\Users\\jimra\\Documents\\GitHub\\StorageManagement\\StorageManagement\\StorageManagement.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\jimra\\.nuget\\packages\\picoxlsx\\2.11.5\\picoxlsx.2.11.5.nupkg.sha512",
+    "C:\\Users\\jimra\\.nuget\\packages\\system.io.packaging\\4.7.0\\system.io.packaging.4.7.0.nupkg.sha512"
+  ],
   "logs": []
 }

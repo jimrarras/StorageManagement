@@ -65,7 +65,7 @@ namespace StorageManagement
             this.textBox3.Location = new System.Drawing.Point(128, 54);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(177, 23);
-            this.textBox3.TabIndex = 3;
+            this.textBox3.TabIndex = 1;
             // 
             // textBox4
             // 
@@ -139,7 +139,7 @@ namespace StorageManagement
             0});
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(139, 23);
-            this.numericUpDown1.TabIndex = 10;
+            this.numericUpDown1.TabIndex = 3;
             this.numericUpDown1.Value = new decimal(new int[] {
             1,
             0,

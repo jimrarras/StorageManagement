@@ -2,7 +2,6 @@
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -23,51 +22,43 @@ namespace StorageManagement
 
             foreach (DataGridViewColumn column in dataGridView1.Columns)
             {
-                column.SortMode = DataGridViewColumnSortMode.NotSortable;
+                column.SortMode = DataGridViewColumnSortMode.NotSortable; //Column sorting disabled on editable items
             }
         }
 
-        //drag n drop
+        //Drag and Drop
 
         private Rectangle dragBoxFromMouseDown;
         private int rowIndexFromMouseDown;
         private int rowIndexOfItemUnderMouseToDrop;
+        private bool filtering = false;
 
-        private void dataGridView1_MouseMove(object sender, MouseEventArgs e)
+        private void dataGridView1_MouseMove(object sender, MouseEventArgs e) 
         {
             if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
             {
-                // If the mouse moves outside the rectangle, start the drag.
+                //Moving outside of rectangle starts dragging
                 if (dragBoxFromMouseDown != Rectangle.Empty &&
                 !dragBoxFromMouseDown.Contains(e.X, e.Y))
                 {
-                    // Proceed with the drag and drop, passing in the list item.                    
-                    DragDropEffects dropEffect = dataGridView1.DoDragDrop(
-                          dataGridView1.Rows[rowIndexFromMouseDown],
-                          DragDropEffects.Move);
+                    //Proceed with the drag and drop, passing in the list item.                    
+                    DragDropEffects dropEffect = dataGridView1.DoDragDrop(dataGridView1.Rows[rowIndexFromMouseDown], DragDropEffects.Move);
                 }
             }
         }
 
         private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
         {
-            // Get the index of the item the mouse is below.
+            //Get the index of the item the mouse is below.
             rowIndexFromMouseDown = dataGridView1.HitTest(e.X, e.Y).RowIndex;
 
-            if (rowIndexFromMouseDown != -1)
+            if (rowIndexFromMouseDown != -1)  //If index is -1, mouse outside of datagridview area
             {
-                // Remember the point where the mouse down occurred. 
-                // The DragSize indicates the size that the mouse can move 
-                // before a drag event should be started.                
+                // Remember the point where the mouse down occurred. The DragSize indicates the size that the mouse can move before a drag event should be started.             
                 Size dragSize = SystemInformation.DragSize;
 
-                // Create a rectangle using the DragSize, with the mouse position being
-                // at the center of the rectangle.
-                dragBoxFromMouseDown = new Rectangle(
-                          new Point(
-                            e.X - (dragSize.Width / 2),
-                            e.Y - (dragSize.Height / 2)),
-                      dragSize);
+                // Create a rectangle using the DragSize, with the mouse position being at the center of the rectangle.
+                dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
             }
             else
                 // Reset the rectangle if the mouse is not over an item in the ListBox.
@@ -76,13 +67,19 @@ namespace StorageManagement
 
         private void dataGridView1_DragOver(object sender, DragEventArgs e)
         {
-            e.Effect = DragDropEffects.Move;
+            if (filtering == true)
+            {
+                e.Effect = DragDropEffects.None;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.Move;
+            }
         }
 
         private void dataGridView1_DragDrop(object sender, DragEventArgs e)
         {
-            // The mouse locations are relative to the screen, so they must be 
-            // converted to client coordinates.
+            // The mouse locations are relative to the screen, so they must be converted to client coordinates.
             Point clientPoint = dataGridView1.PointToClient(new Point(e.X, e.Y));
 
             // Get the row index of the item the mouse is below. 
@@ -98,21 +95,21 @@ namespace StorageManagement
                 dt.Rows.InsertAt( finalrow, rowIndexOfItemUnderMouseToDrop);
                 for (int i = 1; (i - 1) < dataGridView1.Rows.Count; i++)
                 {
-                    dataGridView1.Rows[i - 1].Cells[0].Value = i;
+                    dataGridView1.Rows[i - 1].Cells[0].Value = i; //Refresh items' list ID
                 }
-                dataGridView1.DataSource = dt;
+                dataGridView1.DataSource = dt; //Refresh DataSource
             }
         }
 
         //
 
-        private void load_csv()
+        private void load_csv() //To be changed if databases are implemented
         {
-            var linesx = System.IO.File.ReadAllLines("Inventory.csv").Where(x => !string.IsNullOrWhiteSpace(x)); //change for any other path
+            var linesx = File.ReadAllLines("Inventory.csv").Where(x => !string.IsNullOrWhiteSpace(x)); //Read local Inventory CSV file in directory
             string[] lines = linesx.ToArray<string>();
             if (lines.Length > 0)
             {
-                //first line to create header
+                //First line to create headers row
                 string firstLine = lines[0];
                 string[] headerLabels = firstLine.Split(',');
                 foreach (string headerWord in headerLabels)
@@ -132,7 +129,7 @@ namespace StorageManagement
                     dt.Rows.Add(dr);
                 }
             }
-            if (dt.Rows.Count > 0)
+            if (dt.Rows.Count > 0)  //AutoSizing of Columns
             {
                 dataGridView1.DataSource = dt;
                 dataGridView1.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
@@ -144,11 +141,11 @@ namespace StorageManagement
             }
 
             
-            var lines2x = System.IO.File.ReadAllLines("Report.csv").Where(x => !string.IsNullOrWhiteSpace(x)); //change for any other path
+            var lines2x = File.ReadAllLines("Report.csv").Where(x => !string.IsNullOrWhiteSpace(x)); //Read local Report CSV file in directory
             string[] lines2 = lines2x.ToArray<string>();
             if (lines2.Length > 0)
             {
-                //first line to create header
+                //First line to create header
                 string firstLine2 = lines2[0];
                 string[] headerLabels2 = firstLine2.Split(',');
                 foreach (string headerWord in headerLabels2)
@@ -168,7 +165,7 @@ namespace StorageManagement
                     dt2.Rows.Add(dr);
                 }
             }
-            if (dt2.Rows.Count > 0)
+            if (dt2.Rows.Count > 0) //AutoSizing of Columns
             {
                 dataGridView2.DataSource = dt2;
                 dataGridView2.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
@@ -179,12 +176,13 @@ namespace StorageManagement
             }
         }
 
-        private void button3_Click(object sender, EventArgs e)  //apothikeusi
+        private void button3_Click(object sender, EventArgs e)  //Save changes on Local CSVs. To be changed if databases are implemented
         {
+            //Resetting filters so that the saved CSV doesn't contain just the filtered items
             (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = "";
             (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = "";
             bool fileError = false;
-
+            //Delete files before trying to write the new version
                 if (File.Exists("Inventory.csv") && File.Exists("Report.csv"))
                 {
                     try
@@ -198,7 +196,7 @@ namespace StorageManagement
                         MessageBox.Show("Δεν ήταν δυνατό να αποθηκευτεί το αρχείο." + ex.Message);
                     }
                 }
-                if (!fileError)
+                if (!fileError) //If the files are deleted successfully export new version CSVs
                 {
                     try
                     {
@@ -278,7 +276,7 @@ namespace StorageManagement
                 }
         }
 
-        private void exportexcelgrid1(string param)
+        private void exportexcelgrid1(string param) //Export XLSX file for Inventory with PicoXLSX
         {
             Workbook workbook = new Workbook(param, "Inventory");
             string x = workbook.CurrentWorksheet.MergeCells(new Cell.Range(new PicoXLSX.Cell.Address(0, 0), new PicoXLSX.Cell.Address(3, 0)));
@@ -308,7 +306,7 @@ namespace StorageManagement
             workbook.Save();
         }
 
-        private void exportexcelgrid2(string param)
+        private void exportexcelgrid2(string param) //Export XLSX file for Report with PicoXLSX
         {
             Workbook workbook = new Workbook(param, "Report");
             string x = workbook.CurrentWorksheet.MergeCells(new Cell.Range(new PicoXLSX.Cell.Address(0, 0), new PicoXLSX.Cell.Address(3, 0)));
@@ -339,7 +337,7 @@ namespace StorageManagement
             workbook.Save();
         }
 
-        private void button4_Click(object sender, EventArgs e)  //eksagwgi
+        private void button4_Click(object sender, EventArgs e)  //Export as XLSX by choosing file location and calling the right function depending on the selected tab
         {
             (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = "";
             (dataGridView2.DataSource as DataTable).DefaultView.RowFilter = "";
@@ -393,7 +391,7 @@ namespace StorageManagement
             }
         }
 
-        private void button1_Click(object sender, EventArgs e) //eisagwgi me barcode
+        private void button1_Click(object sender, EventArgs e) //Add new item by barcode
         {
             string bc_check=textBox1.Text;
             string r_check="";
@@ -420,7 +418,7 @@ namespace StorageManagement
                         r_check = (string) dataGridView1.Rows[i].Cells[1].Value;
                         if (bc_check == r_check)
                         {
-                            dataGridView1.Rows[i].Cells[3].Value = Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) + itm_num; //allagi an einai parapanw ta columns en telei
+                            dataGridView1.Rows[i].Cells[3].Value = Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) + itm_num;
                             DateTime time = DateTime.Now;
                             DataRow row= dt2.NewRow();
                             row[0] = Int32.Parse((string)dt2.Rows[dt2.Rows.Count-1][0])+1;
@@ -443,7 +441,7 @@ namespace StorageManagement
             dataGridView2.DataSource = dt2;
         }
 
-        private void button2_Click(object sender, EventArgs e) //eksagwgi me barcode
+        private void button2_Click(object sender, EventArgs e) //Remove item by barcode
         {
             string bc_check = textBox1.Text;
             string r_check = "";
@@ -474,7 +472,7 @@ namespace StorageManagement
                         if (bc_check == r_check)
                         {
                             if((Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) - itm_num) > 0) {
-                                dataGridView1.Rows[i].Cells[3].Value = Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) - itm_num; //allagi an einai parapanw ta columns en telei
+                                dataGridView1.Rows[i].Cells[3].Value = Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) - itm_num;
                                 DateTime time = DateTime.Now;
                                 DataRow row = dt2.NewRow();
                                 row[0] = Int32.Parse((string)dt2.Rows[dt2.Rows.Count - 1][0]) + 1;
@@ -512,17 +510,12 @@ namespace StorageManagement
             dataGridView2.DataSource = dt2;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e) //OnDoubleClick event on datagridview1
         {
             edit_line();
         }
 
-        private void button7_Click(object sender, EventArgs e) //prosthiki stoixeiou, stoixeia apo deuteri forma kai elegxos an yparxei idi kataxwrisi. an yparxei san apli paralavi
+        private void button7_Click(object sender, EventArgs e) //Add new item to Inventory, check if it already exists. If it exists just add items
         {
                 Form2 form = new Form2((dataGridView1.Rows.Count + 1));
                 form.Text = "Προσθήκη Στοιχείου";
@@ -540,7 +533,7 @@ namespace StorageManagement
                     string r_check = (string)dataGridView1.Rows[i].Cells[1].Value;
                     if (form.L2 == r_check)
                     {
-                        dataGridView1.Rows[i].Cells[3].Value = Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) + Int32.Parse(form.L4); //allagi an einai parapanw ta columns en telei
+                        dataGridView1.Rows[i].Cells[3].Value = Int32.Parse((string)dataGridView1.Rows[i].Cells[3].Value) + Int32.Parse(form.L4);
                         MessageBox.Show("Επιτυχής Παραλαβή");
                     }
                     else
@@ -573,12 +566,12 @@ namespace StorageManagement
 
         
 
-        private void button5_Click(object sender, EventArgs e) //epekserg
+        private void button5_Click(object sender, EventArgs e) //Same as DoubleClick event
         {
             edit_line();
         }
 
-        private void edit_line()
+        private void edit_line() //Edit selected Row, add report row to Report.csv
         {
             DataRow row = ((DataRowView)BindingContext[dataGridView1.DataSource].Current).Row;
             int row_ed = row.Table.Rows.IndexOf(row);
@@ -612,7 +605,7 @@ namespace StorageManagement
             dataGridView2.DataSource = dt2;
         }
 
-        private void button6_Click(object sender, EventArgs e) //diagr
+        private void button6_Click(object sender, EventArgs e) //Remove selected item, add report row
         {
             DataRow row = ((DataRowView)BindingContext[dataGridView1.DataSource].Current).Row;
             int row_del = row.Table.Rows.IndexOf(row);
@@ -635,7 +628,7 @@ namespace StorageManagement
             dataGridView2.DataSource = dt2;
         }
 
-        private void button8_Click(object sender, EventArgs e) //odig xr
+        private void button8_Click(object sender, EventArgs e) //Open Instructions pdf
         {
             var p = new Process();
             p.StartInfo = new ProcessStartInfo("instructions.pdf")
@@ -645,13 +638,13 @@ namespace StorageManagement
             p.Start();
         }
 
-        private void button9_Click(object sender, EventArgs e) //cred
+        private void button9_Click(object sender, EventArgs e) //Credits
         {
             Form3 form = new Form3();
             form.Show();
         }
         
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) //Control Buttons shown according to Selected Tab
         {
             if (tabControl1.SelectedTab.Name != "tabPage1")
             {
@@ -667,17 +660,23 @@ namespace StorageManagement
             }
         }
 
-        private void textBox3_TextChanged(object sender, EventArgs e)
+        private void textBox3_TextChanged(object sender, EventArgs e) //OnChange event for Search Bar
         {
-            if (tabControl1.SelectedTab.Name == "tabPage1")
+            filtering = true;
+            if (textBox3.Text == "")
+            {
+                filtering = false;
+            }
+
+            if (tabControl1.SelectedTab.Name == "tabPage1") //Filter first tab if it's selected
                 if (textBox3.Text != "") { 
                     (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = string.Format("BARCODE LIKE '%{0}%' OR DESCRIPTION LIKE '%{0}%'", textBox3.Text);
                 }
-                else
+                else 
                 {
                     (dataGridView1.DataSource as DataTable).DefaultView.RowFilter = "";
                 }
-            else
+            else //Filter second tab if it's selected
             {
                 if (textBox3.Text != "")
                 {
@@ -693,7 +692,7 @@ namespace StorageManagement
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (new StackTrace().GetFrames().Any(x => x.GetMethod().Name == "Close")) //close
+            if (new StackTrace().GetFrames().Any(x => x.GetMethod().Name == "Close")) //CLOSE
             {
                 var res = MessageBox.Show(this, "Αποθήκευση των στοιχείων πριν την έξοδο;", "Exit",
                 MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
@@ -706,7 +705,7 @@ namespace StorageManagement
                     e.Cancel = true;
                 }
             }
-            else  //alt f4 or X
+            else  //Detect ALT+F4 or X button press
             {
                 var res2 = MessageBox.Show(this, "Αποθήκευση των στοιχείων πριν την έξοδο;", "Exit",
                 MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
@@ -721,7 +720,7 @@ namespace StorageManagement
             }
         }
 
-        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) //Cell Color by item description (perCP, FITC, PE coloring)
         {
             for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
@@ -756,6 +755,18 @@ namespace StorageManagement
                     dataGridView1.Rows[i].Cells[2].Style = style;
                 }
             }
+        }
+
+        private void textBox1_Click(object sender, EventArgs e)
+        {
+            textBox1.Clear();
+        }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e) //On cell click get row and add barcode in apropriate field
+        {
+            DataRow row = ((DataRowView)BindingContext[dataGridView1.DataSource].Current).Row;
+            int row_ed = row.Table.Rows.IndexOf(row);
+            textBox1.Text = (string)dt.Rows[row_ed][1];
         }
     } 
  }

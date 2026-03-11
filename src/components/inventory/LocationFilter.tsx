@@ -24,10 +24,10 @@ export function LocationFilter({
       onValueChange={(v) => onChange(v === "all" ? undefined : Number(v))}
     >
       <SelectTrigger className="w-48">
-        <SelectValue placeholder="All Locations" />
+        <SelectValue placeholder="Όλες οι Τοποθεσίες" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Locations</SelectItem>
+        <SelectItem value="all">Όλες οι Τοποθεσίες</SelectItem>
         {locations.map((loc) => (
           <SelectItem key={loc.id} value={String(loc.id)}>
             {loc.name}

@@ -54,16 +54,16 @@ export function ItemDialog({ open, onClose, onSubmit, initialData, title }: Item
             <Input id="barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} required />
           </div>
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Περιγραφή</Label>
             <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
           </div>
           <div>
-            <Label htmlFor="quantity">Quantity</Label>
+            <Label htmlFor="quantity">Ποσότητα</Label>
             <Input id="quantity" type="number" min={0} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Save</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Ακύρωση</Button>
+            <Button type="submit">Αποθήκευση</Button>
           </DialogFooter>
         </form>
       </DialogContent>

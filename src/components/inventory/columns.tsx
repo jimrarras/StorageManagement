@@ -29,7 +29,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
   },
   {
     accessorKey: "locationId",
-    header: "Location",
+    header: "Τοποθεσία",
     cell: ({ row, table }) => {
       const locationMap = (table.options.meta as { locationMap?: Map<number, string> })?.locationMap;
       return locationMap?.get(row.original.locationId) ?? "\u2014";
@@ -38,7 +38,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: "Περιγραφή",
     cell: ({ row }) => {
       const desc = row.getValue<string>("description");
       const colorClass = getReagentColor(desc);
@@ -51,7 +51,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
   },
   {
     accessorKey: "quantity",
-    header: "Quantity",
+    header: "Ποσότητα",
     size: 80,
   },
 ];

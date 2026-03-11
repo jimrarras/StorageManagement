@@ -170,7 +170,7 @@ export function InventoryTable({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="text-center text-muted-foreground h-24">
-                No items found.
+                Δεν βρέθηκαν είδη.
               </TableCell>
             </TableRow>
           )}

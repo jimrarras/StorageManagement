@@ -81,25 +81,25 @@ export function TransferDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Transfer Item</DialogTitle>
+          <DialogTitle>Μεταφορά Είδους</DialogTitle>
         </DialogHeader>
         {item && (
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium">{item.description}</p>
               <p className="text-sm text-muted-foreground">
-                {item.barcode} — Available: {item.quantity}
+                {item.barcode} — Διαθέσιμα: {item.quantity}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>Destination Location</Label>
+              <Label>Τοποθεσία Προορισμού</Label>
               <Select
                 value={toLocationId != null ? String(toLocationId) : ""}
                 onValueChange={(v) => setToLocationId(Number(v))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select location..." />
+                  <SelectValue placeholder="Επιλέξτε τοποθεσία..." />
                 </SelectTrigger>
                 <SelectContent>
                   {otherLocations.map((loc) => (
@@ -112,7 +112,7 @@ export function TransferDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="transfer-qty">Quantity</Label>
+              <Label htmlFor="transfer-qty">Ποσότητα</Label>
               <Input
                 id="transfer-qty"
                 type="number"
@@ -128,7 +128,7 @@ export function TransferDialog({
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={onClose}>
-                Cancel
+                Ακύρωση
               </Button>
               <Button
                 onClick={handleTransfer}
@@ -139,7 +139,7 @@ export function TransferDialog({
                   transferring
                 }
               >
-                Transfer
+                Μεταφορά
               </Button>
             </div>
           </div>

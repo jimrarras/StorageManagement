@@ -4,7 +4,6 @@ import { SearchBar } from "./SearchBar";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { StockPage } from "@/pages/StockPage";
 import { LogPage } from "@/pages/LogPage";
-import { ScanPage } from "@/pages/ScanPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ReportsPage } from "@/pages/ReportsPage";
 
@@ -34,7 +33,6 @@ export function AppLayout() {
         {currentPage === "stock" && <StockPage searchQuery={searchQuery} />}
         {currentPage === "log" && <LogPage searchQuery={searchQuery} />}
         {currentPage === "reports" && <ReportsPage />}
-        {currentPage === "scan" && <ScanPage />}
         {currentPage === "settings" && <SettingsPage />}
       </main>
     </div>

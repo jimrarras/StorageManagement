@@ -1,15 +1,14 @@
-import { LayoutDashboard, Package, ScrollText, FileBarChart, ScanBarcode, Settings } from "lucide-react";
+import { LayoutDashboard, Package, ScrollText, FileBarChart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-export type Page = "dashboard" | "stock" | "log" | "reports" | "scan" | "settings";
+export type Page = "dashboard" | "stock" | "log" | "reports" | "settings";
 
 const navItems: { page: Page; label: string; icon: React.ElementType }[] = [
   { page: "dashboard", label: "Πίνακας Ελέγχου", icon: LayoutDashboard },
   { page: "stock", label: "Απόθεμα", icon: Package },
   { page: "log", label: "Κινήσεις", icon: ScrollText },
   { page: "reports", label: "Αναφορές", icon: FileBarChart },
-  { page: "scan", label: "Σάρωση", icon: ScanBarcode },
 ];
 
 interface SidebarProps {

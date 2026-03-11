@@ -34,3 +34,10 @@ export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
+
+export const colorRules = sqliteTable("color_rules", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  keyword: text("keyword").notNull().unique(),
+  color: text("color").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+});

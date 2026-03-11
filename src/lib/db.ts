@@ -52,6 +52,12 @@ const MIGRATIONS: string[] = [
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS color_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    color TEXT NOT NULL,
+    sort_order INTEGER NOT NULL
+  )`,
 ];
 
 async function migrateForLocations(sqlite: Database) {
@@ -133,6 +139,17 @@ export async function initDatabase() {
   // Seed default settings
   await _sqlite.execute(
     `INSERT OR IGNORE INTO settings (key, value) VALUES ('low_stock_threshold', '5')`
+  );
+
+  // Seed default color rules
+  await _sqlite.execute(
+    `INSERT OR IGNORE INTO color_rules (keyword, color, sort_order) VALUES ('perCP', '#ea580c', 1)`
+  );
+  await _sqlite.execute(
+    `INSERT OR IGNORE INTO color_rules (keyword, color, sort_order) VALUES ('FITC', '#166534', 2)`
+  );
+  await _sqlite.execute(
+    `INSERT OR IGNORE INTO color_rules (keyword, color, sort_order) VALUES ('PE', '#dc2626', 3)`
   );
 
   _db = createDrizzle(_sqlite);

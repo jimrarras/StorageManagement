@@ -30,7 +30,7 @@ export function UsageReport({ rows }: UsageReportProps) {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No reagent usage recorded in this period.
+        Δεν καταγράφηκε χρήση αντιδραστηρίων σε αυτήν την περίοδο.
       </p>
     );
   }

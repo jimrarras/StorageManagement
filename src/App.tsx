@@ -12,8 +12,8 @@ function App() {
       .catch((err) => setError(err.message));
   }, []);
 
-  if (error) return <div className="p-4 text-red-500">Database error: {error}</div>;
-  if (!ready) return <div className="p-4">Loading...</div>;
+  if (error) return <div className="p-4 text-red-500">Σφάλμα βάσης δεδομένων: {error}</div>;
+  if (!ready) return <div className="p-4">Φόρτωση...</div>;
 
   return <AppLayout />;
 }

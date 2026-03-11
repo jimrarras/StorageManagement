@@ -53,7 +53,7 @@ export function ActivityTable({ data }: ActivityTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={activityColumns.length} className="text-center text-muted-foreground h-24">
-                No activity recorded yet.
+                Δεν έχει καταγραφεί δραστηριότητα.
               </TableCell>
             </TableRow>
           )}

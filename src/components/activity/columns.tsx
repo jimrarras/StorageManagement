@@ -1,6 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import type { ActivityEntry } from "@/lib/activity";
 import { Badge } from "@/components/ui/badge";
+import { actionLabel } from "@/lib/utils";
 
 const actionColors: Record<string, string> = {
   ADD: "bg-green-100 text-green-800",
@@ -13,7 +14,7 @@ const actionColors: Record<string, string> = {
 export const activityColumns: ColumnDef<ActivityEntry>[] = [
   {
     accessorKey: "createdAt",
-    header: "Date/Time",
+    header: "Ημερομηνία/Ώρα",
     cell: ({ row }) => {
       const date = new Date(row.getValue<string>("createdAt"));
       return date.toLocaleString("el-GR");
@@ -27,16 +28,16 @@ export const activityColumns: ColumnDef<ActivityEntry>[] = [
   },
   {
     accessorKey: "action",
-    header: "Action",
+    header: "Ενέργεια",
     cell: ({ row }) => {
       const action = row.getValue<string>("action");
-      return <Badge className={actionColors[action] ?? ""}>{action}</Badge>;
+      return <Badge className={actionColors[action] ?? ""}>{actionLabel(action)}</Badge>;
     },
     size: 100,
   },
   {
     accessorKey: "quantityChange",
-    header: "Qty Change",
+    header: "Μεταβολή Ποσ.",
     cell: ({ row }) => {
       const change = row.getValue<number | null>("quantityChange");
       if (change == null) return "—";
@@ -46,7 +47,7 @@ export const activityColumns: ColumnDef<ActivityEntry>[] = [
   },
   {
     id: "location",
-    header: "Location",
+    header: "Τοποθεσία",
     cell: ({ row }) => {
       const entry = row.original;
       if (entry.action === "TRANSFER") {

@@ -7,7 +7,7 @@ export type Page = "dashboard" | "stock" | "log" | "reports" | "scan" | "setting
 const navItems: { page: Page; label: string; icon: React.ElementType }[] = [
   { page: "dashboard", label: "Πίνακας Ελέγχου", icon: LayoutDashboard },
   { page: "stock", label: "Απόθεμα", icon: Package },
-  { page: "log", label: "Ημερολόγιο Δραστηριότητας", icon: ScrollText },
+  { page: "log", label: "Κινήσεις", icon: ScrollText },
   { page: "reports", label: "Αναφορές", icon: FileBarChart },
   { page: "scan", label: "Σάρωση", icon: ScanBarcode },
 ];

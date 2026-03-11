@@ -144,11 +144,11 @@ export function ReportsPage() {
         value={tab}
         onValueChange={(value) => setTab(value as ReportTab)}
       >
-        <TabsList>
-          <TabsTrigger value="snapshot">Στιγμιότυπο Αποθέματος</TabsTrigger>
-          <TabsTrigger value="movement">Κινήσεις</TabsTrigger>
-          <TabsTrigger value="low_stock">Ιστορικό Χαμηλού Αποθέματος</TabsTrigger>
-          <TabsTrigger value="usage">Χρήση Αντιδραστηρίων</TabsTrigger>
+        <TabsList className="w-full">
+          <TabsTrigger value="snapshot" className="flex-1">Στιγμιότυπο Αποθέματος</TabsTrigger>
+          <TabsTrigger value="movement" className="flex-1">Κινήσεις</TabsTrigger>
+          <TabsTrigger value="low_stock" className="flex-1">Ιστορικό Χαμηλού Αποθέματος</TabsTrigger>
+          <TabsTrigger value="usage" className="flex-1">Χρήση Αντιδραστηρίων</TabsTrigger>
         </TabsList>
 
         {/* Error */}

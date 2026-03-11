@@ -63,11 +63,11 @@ export async function exportInventoryXlsx(
 
 export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<boolean> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Ημερολόγιο Δραστηριότητας");
+  const sheet = workbook.addWorksheet("Κινήσεις");
 
   sheet.mergeCells("A1:E1");
   const titleCell = sheet.getCell("A1");
-  titleCell.value = `Αναφορά Δραστηριότητας — ${new Date().toLocaleDateString("el-GR")}`;
+  titleCell.value = `Αναφορά Κινήσεων — ${new Date().toLocaleDateString("el-GR")}`;
   titleCell.font = { bold: true, size: 14 };
 
   sheet.addRow([]);

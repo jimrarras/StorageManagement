@@ -25,7 +25,7 @@ export function LogPage({ searchQuery }: LogPageProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Ημερολόγιο Δραστηριότητας</h1>
+        <h1 className="text-2xl font-bold">Κινήσεις</h1>
         <Button size="sm" variant="outline" onClick={() => exportActivityXlsx(entries)}>
           <FileSpreadsheet className="mr-1 h-4 w-4" /> Εξαγωγή XLSX
         </Button>

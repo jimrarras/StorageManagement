@@ -46,7 +46,7 @@ function parseCsvLine(line: string): string[] {
 export async function importInventoryCsv(): Promise<number> {
   const filePath = await open({
     filters: [{ name: "CSV", extensions: ["csv"] }],
-    title: "Select Inventory.csv",
+    title: "Επιλέξτε Inventory.csv",
   });
   if (!filePath) return 0;
 
@@ -90,7 +90,7 @@ export async function importInventoryCsv(): Promise<number> {
 export async function importReportCsv(): Promise<number> {
   const filePath = await open({
     filters: [{ name: "CSV", extensions: ["csv"] }],
-    title: "Select Report.csv",
+    title: "Επιλέξτε Report.csv",
   });
   if (!filePath) return 0;
 

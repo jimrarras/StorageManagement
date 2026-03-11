@@ -96,7 +96,7 @@ export async function removeQuantity(
   await sqlite.execute("BEGIN TRANSACTION");
   try {
     const item = await getInventoryByBarcodeAndLocation(barcode, locationId);
-    if (!item) throw new Error(`Item with barcode ${barcode} not found`);
+    if (!item) throw new Error(`Το είδος με barcode ${barcode} δεν βρέθηκε`);
 
     const newQty = Math.max(0, item.quantity - amount);
     const actualRemoved = item.quantity - newQty;
@@ -132,7 +132,7 @@ export async function updateInventoryItem(
     const item = (
       await db.select().from(inventory).where(eq(inventory.id, id))
     )[0];
-    if (!item) throw new Error(`Item with id ${id} not found`);
+    if (!item) throw new Error(`Το είδος με id ${id} δεν βρέθηκε`);
 
     await db
       .update(inventory)
@@ -163,7 +163,7 @@ export async function deleteInventoryItem(id: number): Promise<void> {
     const item = (
       await db.select().from(inventory).where(eq(inventory.id, id))
     )[0];
-    if (!item) throw new Error(`Item with id ${id} not found`);
+    if (!item) throw new Error(`Το είδος με id ${id} δεν βρέθηκε`);
 
     await db.insert(activityLog).values({
       barcode: item.barcode,
@@ -196,8 +196,8 @@ export async function transferItem(
       barcode,
       fromLocationId
     );
-    if (!source) throw new Error("Source item not found");
-    if (source.quantity < quantity) throw new Error("Insufficient quantity");
+    if (!source) throw new Error("Το είδος προέλευσης δεν βρέθηκε");
+    if (source.quantity < quantity) throw new Error("Ανεπαρκής ποσότητα");
 
     // Decrement source
     await db

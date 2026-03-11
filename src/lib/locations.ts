@@ -11,14 +11,14 @@ export async function getAllLocations(): Promise<Location[]> {
 
 export async function addLocation(name: string): Promise<void> {
   const trimmed = name.trim();
-  if (!trimmed) throw new Error("Location name cannot be empty");
+  if (!trimmed) throw new Error("Το όνομα τοποθεσίας δεν μπορεί να είναι κενό");
   const db = getDb();
   await db.insert(locations).values({ name: trimmed });
 }
 
 export async function renameLocation(id: number, name: string): Promise<void> {
   const trimmed = name.trim();
-  if (!trimmed) throw new Error("Location name cannot be empty");
+  if (!trimmed) throw new Error("Το όνομα τοποθεσίας δεν μπορεί να είναι κενό");
   const db = getDb();
   await db.update(locations).set({ name: trimmed }).where(eq(locations.id, id));
 }
@@ -27,7 +27,7 @@ export async function deleteLocation(id: number): Promise<void> {
   const db = getDb();
 
   // Prevent deleting the Default location
-  if (id === 1) throw new Error("Cannot delete the Default location");
+  if (id === 1) throw new Error("Δεν είναι δυνατή η διαγραφή της Προεπιλεγμένης τοποθεσίας");
 
   // Prevent deleting a location that has items
   const items = await db
@@ -36,7 +36,7 @@ export async function deleteLocation(id: number): Promise<void> {
     .where(eq(inventory.locationId, id))
     .limit(1);
   if (items.length > 0) {
-    throw new Error("Cannot delete a location that has items");
+    throw new Error("Δεν είναι δυνατή η διαγραφή τοποθεσίας που περιέχει είδη");
   }
 
   await db.delete(locations).where(eq(locations.id, id));

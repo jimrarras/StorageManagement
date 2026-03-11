@@ -3,25 +3,26 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import type { InventoryItem } from "./inventory";
 import type { ActivityEntry } from "./activity";
+import { actionLabel } from "./utils";
 
 export async function exportInventoryXlsx(
   items: InventoryItem[],
   locationMap?: Map<number, string>
 ): Promise<boolean> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Inventory");
+  const sheet = workbook.addWorksheet("Απόθεμα");
 
   // Title row
   sheet.mergeCells("A1:E1");
   const titleCell = sheet.getCell("A1");
-  titleCell.value = `Inventory Report — ${new Date().toLocaleDateString("el-GR")}`;
+  titleCell.value = `Αναφορά Αποθέματος — ${new Date().toLocaleDateString("el-GR")}`;
   titleCell.font = { bold: true, size: 14 };
 
   // Empty row
   sheet.addRow([]);
 
   // Headers
-  const headerRow = sheet.addRow(["Barcode", "Description", "Quantity", "Location", "Last Updated"]);
+  const headerRow = sheet.addRow(["Barcode", "Περιγραφή", "Ποσότητα", "Τοποθεσία", "Τελευταία Ενημέρωση"]);
   headerRow.font = { bold: true };
   headerRow.eachCell((cell) => {
     cell.border = {
@@ -62,16 +63,16 @@ export async function exportInventoryXlsx(
 
 export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<boolean> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Activity Log");
+  const sheet = workbook.addWorksheet("Ημερολόγιο Δραστηριότητας");
 
   sheet.mergeCells("A1:E1");
   const titleCell = sheet.getCell("A1");
-  titleCell.value = `Activity Report — ${new Date().toLocaleDateString("el-GR")}`;
+  titleCell.value = `Αναφορά Δραστηριότητας — ${new Date().toLocaleDateString("el-GR")}`;
   titleCell.font = { bold: true, size: 14 };
 
   sheet.addRow([]);
 
-  const headerRow = sheet.addRow(["Date/Time", "Barcode", "Action", "Qty Change", "Location"]);
+  const headerRow = sheet.addRow(["Ημερομηνία/Ώρα", "Barcode", "Ενέργεια", "Μεταβολή Ποσ.", "Τοποθεσία"]);
   headerRow.font = { bold: true };
   headerRow.eachCell((cell) => {
     cell.border = {
@@ -90,7 +91,7 @@ export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<bool
     const row = sheet.addRow([
       entry.createdAt,
       entry.barcode,
-      entry.action,
+      actionLabel(entry.action),
       entry.quantityChange ?? "—",
       location,
     ]);
@@ -125,7 +126,7 @@ export async function exportReportXlsx<T>(
   rows: T[]
 ): Promise<boolean> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Report");
+  const sheet = workbook.addWorksheet("Αναφορά");
 
   // Title row — merge across all columns (numeric API works for any column count)
   sheet.mergeCells(1, 1, 1, columns.length);

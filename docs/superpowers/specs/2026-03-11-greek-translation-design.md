@@ -18,7 +18,7 @@ Direct replacement: go file-by-file and replace every English string with its Gr
 | Tauri config | `src-tauri/tauri.conf.json` (window title) |
 | Navigation & Layout | `AppLayout.tsx`, `Sidebar.tsx`, `SearchBar.tsx` |
 | Pages | `StockPage.tsx`, `DashboardPage.tsx`, `LogPage.tsx`, `ReportsPage.tsx`, `ScanPage.tsx`, `SettingsPage.tsx` |
-| Inventory components | `InventoryTable.tsx`, `AddItemDialog.tsx` (or inline dialog), `TransferDialog.tsx`, `LocationFilter.tsx` |
+| Inventory components | `InventoryTable.tsx`, `ItemDialog.tsx`, `TransferDialog.tsx`, `LocationFilter.tsx`, `columns.tsx` |
 | Dashboard components | `KpiCards.tsx`, `StockMovementChart.tsx`, `LowStockList.tsx`, `MostUsedChart.tsx` |
 | Report components | `DateRangeBar.tsx`, `InventorySnapshot.tsx`, `MovementReport.tsx`, `LowStockHistory.tsx`, `UsageReport.tsx` |
 | Scanner components | `ScannerView.tsx`, `ScannedItemCard.tsx` |
@@ -102,6 +102,7 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 | Transfer | Μεταφορά |
 | Transfer Item | Μεταφορά Είδους |
 | Load More | Φόρτωση Περισσότερων |
+| Remove | Αφαίρεση |
 | Scan Again | Νέα Σάρωση |
 | All Locations | Όλες οι Τοποθεσίες |
 
@@ -118,19 +119,19 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 | Current Stock | Τρέχον Απόθεμα |
 | Amount | Ποσότητα |
 | Qty: | Ποσ.: |
+| Qty | Ποσ. |
+| Unknown | Άγνωστη |
+| Search barcode or description... | Αναζήτηση barcode ή περιγραφής... |
+| Search barcode or date... | Αναζήτηση barcode ή ημερομηνίας... |
 
 ### Report Tabs & XLSX
 
 | English | Greek |
 |---------|-------|
-| Snapshot | Στιγμιότυπο |
-| Movement | Κινήσεις |
-| Low Stock | Χαμηλό Απόθεμα |
-| Usage | Χρήση |
-| Inventory Snapshot | Στιγμιότυπο Αποθέματος |
-| Movement Report | Αναφορά Κινήσεων |
-| Low Stock History | Ιστορικό Χαμηλού Αποθέματος |
-| Reagent Usage | Χρήση Αντιδραστηρίων |
+| Inventory Snapshot (tab & XLSX) | Στιγμιότυπο Αποθέματος |
+| Movement (tab) / Movement Report (XLSX) | Κινήσεις / Αναφορά Κινήσεων |
+| Low Stock History (tab & XLSX) | Ιστορικό Χαμηλού Αποθέματος |
+| Reagent Usage (tab & XLSX) | Χρήση Αντιδραστηρίων |
 
 ### Report-Specific Column Headers
 
@@ -181,7 +182,7 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 
 | English | Greek |
 |---------|-------|
-| 7d, 14d, 30d, 90d | 7ημ, 14ημ, 30ημ, 90ημ |
+| {n}d (e.g. 30d, 60d, 90d) | {n}ημ (e.g. 30ημ, 60ημ, 90ημ) |
 
 ### Loading & Empty States
 
@@ -217,6 +218,8 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 | Location name cannot be empty | Το όνομα τοποθεσίας δεν μπορεί να είναι κενό |
 | Cannot delete the Default location | Δεν είναι δυνατή η διαγραφή της Προεπιλεγμένης τοποθεσίας |
 | Cannot delete a location that has items | Δεν είναι δυνατή η διαγραφή τοποθεσίας που περιέχει είδη |
+| Item with barcode {barcode} not found | Το είδος με barcode {barcode} δεν βρέθηκε |
+| Item with id {id} not found | Το είδος με id {id} δεν βρέθηκε |
 
 ### Settings Page
 
@@ -238,6 +241,8 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 | Select Inventory.csv | Επιλέξτε Inventory.csv |
 | Select Report.csv | Επιλέξτε Report.csv |
 | About | Σχετικά |
+| StorageManagement — Inventory tracking for the Molecular Biology Unit, PGNI Hospital of Ioannina. | Διαχείριση Αποθήκης — Παρακολούθηση αποθέματος για τη Μονάδα Μοριακής Βιολογίας, ΠΓΝΙ Ιωαννίνων. |
+| Licensed under CC BY-NC-SA 4.0 | Άδεια χρήσης CC BY-NC-SA 4.0 |
 
 ### XLSX Export Details
 
@@ -246,8 +251,10 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 | Inventory (sheet name) | Απόθεμα |
 | Activity Log (sheet name) | Ημερολόγιο Δραστηριότητας |
 | Report (sheet name) | Αναφορά |
-| Activity Report (title) | Αναφορά Δραστηριότητας |
+| Inventory Report (title row) | Αναφορά Αποθέματος |
+| Activity Report (title row) | Αναφορά Δραστηριότητας |
 | Excel (file dialog filter) | Excel |
+| CSV (file dialog filter) | CSV |
 
 - Sheet names and column headers use Greek translations from the tables above
 - XLSX action values use the `actionLabel()` mapper
@@ -264,4 +271,7 @@ A new `actionLabel(action: string): string` function in `utils.ts` maps DB actio
 - A new `actionLabel()` function must be **created** in `utils.ts` — it does not exist today
 - `activity/columns.tsx` currently renders raw action strings; must call `actionLabel()` after it's created
 - `export.ts` must also use `actionLabel()` when writing activity data to XLSX
+- Create a `statusLabel(status: string): string` function in `utils.ts` to map "OK"/"Low"/"Depleted" to Greek display strings. Apply at the rendering layer in `LowStockHistory.tsx` — do NOT modify the data before style lookup (`statusStyles` keys must still match English values)
+- `formatDepletion()` logic with "N/A"/"Depleted"/"{n} days" exists in both `UsageReport.tsx` and `ReportsPage.tsx` (XLSX accessor) — both must be translated
+- "Excel" and "CSV" file dialog filter labels stay as-is (recognized universally)
 - No new dependencies required

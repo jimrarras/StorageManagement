@@ -26,7 +26,7 @@ export function AppLayout() {
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={currentPage === "stock" ? "Search barcode or description..." : "Search barcode or date..."}
+              placeholder={currentPage === "stock" ? "Αναζήτηση barcode ή περιγραφής..." : "Αναζήτηση barcode ή ημερομηνίας..."}
             />
           </div>
         )}

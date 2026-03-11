@@ -7,7 +7,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = "Search..." }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = "Αναζήτηση..." }: SearchBarProps) {
   return (
     <div className="relative w-full max-w-sm">
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

@@ -5,11 +5,11 @@ import { Separator } from "@/components/ui/separator";
 export type Page = "dashboard" | "stock" | "log" | "reports" | "scan" | "settings";
 
 const navItems: { page: Page; label: string; icon: React.ElementType }[] = [
-  { page: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { page: "stock", label: "Stock", icon: Package },
-  { page: "log", label: "Activity Log", icon: ScrollText },
-  { page: "reports", label: "Reports", icon: FileBarChart },
-  { page: "scan", label: "Scan", icon: ScanBarcode },
+  { page: "dashboard", label: "Πίνακας Ελέγχου", icon: LayoutDashboard },
+  { page: "stock", label: "Απόθεμα", icon: Package },
+  { page: "log", label: "Ημερολόγιο Δραστηριότητας", icon: ScrollText },
+  { page: "reports", label: "Αναφορές", icon: FileBarChart },
+  { page: "scan", label: "Σάρωση", icon: ScanBarcode },
 ];
 
 interface SidebarProps {
@@ -20,7 +20,7 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
   return (
     <div className="flex h-full w-56 flex-col border-r bg-muted/40 p-4">
-      <h2 className="mb-6 text-lg font-semibold">StorageManagement</h2>
+      <h2 className="mb-6 text-lg font-semibold">Διαχείριση Αποθήκης</h2>
       <nav className="flex flex-1 flex-col gap-1">
         {navItems.map(({ page, label, icon: Icon }) => (
           <Button
@@ -41,7 +41,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
         onClick={() => onPageChange("settings")}
       >
         <Settings className="h-4 w-4" />
-        Settings
+        Ρυθμίσεις
       </Button>
     </div>
   );

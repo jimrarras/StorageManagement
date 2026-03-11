@@ -4,9 +4,10 @@ import { Html5Qrcode } from "html5-qrcode";
 interface ScannerViewProps {
   onScan: (barcode: string) => void;
   active: boolean;
+  onError?: () => void;
 }
 
-export function ScannerView({ onScan, active }: ScannerViewProps) {
+export function ScannerView({ onScan, active, onError }: ScannerViewProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const hasScannedRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,10 @@ export function ScannerView({ onScan, active }: ScannerViewProps) {
         },
         () => {}
       )
-      .catch((err) => setError(`Σφάλμα κάμερας: ${err}`));
+      .catch((err) => {
+        setError(`Σφάλμα κάμερας: ${err}`);
+        onError?.();
+      });
 
     return () => {
       scanner.stop().catch(() => {});

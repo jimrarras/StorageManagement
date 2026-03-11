@@ -95,7 +95,7 @@ export function ScanPage() {
         )}
       </div>
 
-      {scanning && <ScannerView onScan={handleScan} active={scanning} />}
+      {scanning && <ScannerView onScan={handleScan} active={scanning} onError={() => setScanning(false)} />}
 
       {multipleItems && (
         <div className="space-y-3 max-w-md mx-auto">

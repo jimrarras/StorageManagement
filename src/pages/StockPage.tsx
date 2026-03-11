@@ -40,7 +40,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
       await addItem(data.barcode, data.description, data.quantity);
       setDialogMode(null);
     } catch (err) {
-      alert(`Failed to add item: ${err}`);
+      alert(`Αποτυχία προσθήκης είδους: ${err}`);
     }
   };
 
@@ -50,28 +50,28 @@ export function StockPage({ searchQuery }: StockPageProps) {
       await editItem(selectedItem.id, data);
       setDialogMode(null);
     } catch (err) {
-      alert(`Failed to edit item: ${err}`);
+      alert(`Αποτυχία επεξεργασίας είδους: ${err}`);
     }
   };
 
   const handleDelete = async () => {
     if (!selectedItem) return;
-    if (confirm("Are you sure you want to delete this item?")) {
+    if (confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το είδος;")) {
       try {
         await deleteItem(selectedItem.id);
         setSelectedItem(null);
       } catch (err) {
-        alert(`Failed to delete item: ${err}`);
+        alert(`Αποτυχία διαγραφής είδους: ${err}`);
       }
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Φόρτωση...</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Stock</h1>
+        <h1 className="text-2xl font-bold">Απόθεμα</h1>
         <div className="flex gap-2">
           <LocationFilter
             value={locationId}
@@ -79,21 +79,21 @@ export function StockPage({ searchQuery }: StockPageProps) {
             locations={locations}
           />
           <Button size="sm" onClick={() => { setDialogMode("add"); setSelectedItem(null); }}>
-            <Plus className="mr-1 h-4 w-4" /> Add Item
+            <Plus className="mr-1 h-4 w-4" /> Προσθήκη Είδους
           </Button>
           <Button size="sm" variant="outline" disabled={!selectedItem} onClick={() => setDialogMode("edit")}>
-            <Pencil className="mr-1 h-4 w-4" /> Edit
+            <Pencil className="mr-1 h-4 w-4" /> Επεξεργασία
           </Button>
           <Button size="sm" variant="destructive" disabled={!selectedItem} onClick={handleDelete}>
-            <Trash2 className="mr-1 h-4 w-4" /> Delete
+            <Trash2 className="mr-1 h-4 w-4" /> Διαγραφή
           </Button>
           {selectedItem && locations.length >= 2 && (
             <Button size="sm" variant="outline" onClick={() => setTransferTarget(selectedItem)}>
-              <ArrowRightLeft className="mr-1 h-4 w-4" /> Transfer
+              <ArrowRightLeft className="mr-1 h-4 w-4" /> Μεταφορά
             </Button>
           )}
           <Button size="sm" variant="outline" onClick={() => exportInventoryXlsx(items, locationMap)}>
-            <FileSpreadsheet className="mr-1 h-4 w-4" /> Export XLSX
+            <FileSpreadsheet className="mr-1 h-4 w-4" /> Εξαγωγή XLSX
           </Button>
         </div>
       </div>
@@ -113,7 +113,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
         onClose={() => setDialogMode(null)}
         onSubmit={dialogMode === "edit" ? handleEdit : handleAdd}
         initialData={dialogMode === "edit" && selectedItem ? selectedItem : undefined}
-        title={dialogMode === "edit" ? "Edit Item" : "Add Item"}
+        title={dialogMode === "edit" ? "Επεξεργασία Είδους" : "Προσθήκη Είδους"}
       />
 
       <TransferDialog

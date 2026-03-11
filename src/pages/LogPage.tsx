@@ -20,21 +20,21 @@ export function LogPage({ searchQuery }: LogPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Φόρτωση...</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Activity Log</h1>
+        <h1 className="text-2xl font-bold">Ημερολόγιο Δραστηριότητας</h1>
         <Button size="sm" variant="outline" onClick={() => exportActivityXlsx(entries)}>
-          <FileSpreadsheet className="mr-1 h-4 w-4" /> Export XLSX
+          <FileSpreadsheet className="mr-1 h-4 w-4" /> Εξαγωγή XLSX
         </Button>
       </div>
       <ActivityTable data={entries} />
       {hasMore && (
         <div className="flex justify-center">
           <Button variant="outline" onClick={loadMore}>
-            Load More
+            Φόρτωση Περισσότερων
           </Button>
         </div>
       )}

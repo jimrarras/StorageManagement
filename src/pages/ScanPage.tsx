@@ -87,10 +87,10 @@ export function ScanPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Scan</h1>
+        <h1 className="text-2xl font-bold">Σάρωση</h1>
         {!scanning && (
           <Button variant="outline" onClick={resetScanner}>
-            Scan Again
+            Νέα Σάρωση
           </Button>
         )}
       </div>
@@ -100,10 +100,10 @@ export function ScanPage() {
       {multipleItems && (
         <div className="space-y-3 max-w-md mx-auto">
           <p className="text-sm font-medium">
-            This barcode exists in multiple locations. Select one:
+            Αυτό το barcode υπάρχει σε πολλές τοποθεσίες. Επιλέξτε μία:
           </p>
           {multipleItems.map((item) => {
-            const locName = locations.find((l) => l.id === item.locationId)?.name ?? "Unknown";
+            const locName = locations.find((l) => l.id === item.locationId)?.name ?? "Άγνωστη";
             return (
               <Button
                 key={item.id}
@@ -115,7 +115,7 @@ export function ScanPage() {
                 }}
               >
                 <span>{locName}</span>
-                <span className="text-muted-foreground">Qty: {item.quantity}</span>
+                <span className="text-muted-foreground">Ποσ.: {item.quantity}</span>
               </Button>
             );
           })}
@@ -128,7 +128,7 @@ export function ScanPage() {
 
       {unknownBarcode && locations.length > 1 && (
         <div className="space-y-2 max-w-md mx-auto">
-          <Label>Location for new item</Label>
+          <Label>Τοποθεσία νέου είδους</Label>
           <Select
             value={String(newItemLocationId)}
             onValueChange={(v) => setNewItemLocationId(Number(v))}
@@ -152,7 +152,7 @@ export function ScanPage() {
         onClose={() => setUnknownBarcode(null)}
         onSubmit={handleNewItem}
         initialData={unknownBarcode ? { barcode: unknownBarcode, description: "", quantity: 1 } : undefined}
-        title="New Item — Barcode Not Found"
+        title="Νέο Είδος — Barcode Δεν Βρέθηκε"
       />
     </div>
   );

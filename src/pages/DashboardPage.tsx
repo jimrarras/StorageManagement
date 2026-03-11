@@ -17,14 +17,14 @@ export function DashboardPage() {
     [locations]
   );
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-600">Failed to load dashboard: {error}</div>;
+  if (loading) return <div>Φόρτωση...</div>;
+  if (error) return <div className="text-red-600">Αποτυχία φόρτωσης πίνακα ελέγχου: {error}</div>;
   if (!data) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">Πίνακας Ελέγχου</h1>
         <LocationFilter
           value={locationId}
           onChange={setLocationId}

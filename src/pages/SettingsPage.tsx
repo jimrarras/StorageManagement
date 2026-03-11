@@ -50,18 +50,18 @@ export function SettingsPage() {
   const handleImportInventory = async () => {
     try {
       const count = await importInventoryCsv();
-      setImportStatus(`Imported ${count} inventory items.`);
+      setImportStatus(`Εισήχθησαν ${count} είδη αποθέματος.`);
     } catch (err) {
-      setImportStatus(`Import failed: ${err}`);
+      setImportStatus(`Αποτυχία εισαγωγής: ${err}`);
     }
   };
 
   const handleImportReport = async () => {
     try {
       const count = await importReportCsv();
-      setImportStatus(`Imported ${count} activity log entries.`);
+      setImportStatus(`Εισήχθησαν ${count} εγγραφές δραστηριότητας.`);
     } catch (err) {
-      setImportStatus(`Import failed: ${err}`);
+      setImportStatus(`Αποτυχία εισαγωγής: ${err}`);
     }
   };
 
@@ -98,24 +98,23 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-lg">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">Ρυθμίσεις</h1>
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">CSV Import (Migration)</h2>
+        <h2 className="text-lg font-semibold">Εισαγωγή CSV (Μετάπτωση)</h2>
         <p className="text-sm text-muted-foreground">
-          Import data from the old StorageManagement app. This is a one-time
-          operation.
+          Εισαγωγή δεδομένων από την παλιά εφαρμογή. Αυτή είναι μια εφάπαξ ενέργεια.
         </p>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleImportInventory}>
-            <Upload className="mr-1 h-4 w-4" /> Import Inventory.csv
+            <Upload className="mr-1 h-4 w-4" /> Εισαγωγή Inventory.csv
           </Button>
           <Button variant="outline" onClick={handleImportReport}>
-            <Upload className="mr-1 h-4 w-4" /> Import Report.csv
+            <Upload className="mr-1 h-4 w-4" /> Εισαγωγή Report.csv
           </Button>
         </div>
         {importStatus && (
-          <p className={`text-sm ${importStatus.startsWith("Import failed") ? "text-red-600" : "text-green-600"}`}>
+          <p className={`text-sm ${importStatus.startsWith("Αποτυχία") ? "text-red-600" : "text-green-600"}`}>
             {importStatus}
           </p>
         )}
@@ -124,11 +123,11 @@ export function SettingsPage() {
       <Separator />
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Dashboard Settings</h2>
+        <h2 className="text-lg font-semibold">Ρυθμίσεις Πίνακα Ελέγχου</h2>
         <div className="space-y-2">
-          <Label htmlFor="threshold">Low Stock Threshold</Label>
+          <Label htmlFor="threshold">Όριο Χαμηλού Αποθέματος</Label>
           <p className="text-sm text-muted-foreground">
-            Items with quantity at or below this number will appear in the Low Stock alerts.
+            Τα είδη με ποσότητα ίση ή κάτω από αυτόν τον αριθμό θα εμφανίζονται στις ειδοποιήσεις Χαμηλού Αποθέματος.
           </p>
           <Input
             id="threshold"
@@ -141,16 +140,16 @@ export function SettingsPage() {
             }}
             className="w-24"
           />
-          {thresholdSaved && <p className="text-sm text-green-600">Saved.</p>}
+          {thresholdSaved && <p className="text-sm text-green-600">Αποθηκεύτηκε.</p>}
         </div>
       </div>
 
       <Separator />
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Locations</h2>
+        <h2 className="text-lg font-semibold">Τοποθεσίες</h2>
         <p className="text-sm text-muted-foreground">
-          Manage storage locations. Items can be tracked per location.
+          Διαχείριση τοποθεσιών αποθήκευσης. Τα είδη μπορούν να παρακολουθούνται ανά τοποθεσία.
         </p>
 
         <div className="space-y-2">
@@ -173,7 +172,7 @@ export function SettingsPage() {
                     size="sm"
                     onClick={() => handleRenameLocation(loc.id)}
                   >
-                    Save
+                    Αποθήκευση
                   </Button>
                 </>
               ) : (
@@ -206,7 +205,7 @@ export function SettingsPage() {
 
         <div className="flex gap-2">
           <Input
-            placeholder="New location name..."
+            placeholder="Νέο όνομα τοποθεσίας..."
             value={newLocationName}
             onChange={(e) => setNewLocationName(e.target.value)}
             onKeyDown={(e) => {
@@ -215,7 +214,7 @@ export function SettingsPage() {
             className="flex-1"
           />
           <Button size="sm" onClick={handleAddLocation}>
-            <Plus className="mr-1 h-4 w-4" /> Add
+            <Plus className="mr-1 h-4 w-4" /> Προσθήκη
           </Button>
         </div>
 
@@ -227,13 +226,12 @@ export function SettingsPage() {
       <Separator />
 
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold">About</h2>
+        <h2 className="text-lg font-semibold">Σχετικά</h2>
         <p className="text-sm text-muted-foreground">
-          StorageManagement — Inventory tracking for the Molecular Biology Unit,
-          PGNI Hospital of Ioannina.
+          Διαχείριση Αποθήκης — Παρακολούθηση αποθέματος για τη Μονάδα Μοριακής Βιολογίας, ΠΓΝΙ Ιωαννίνων.
         </p>
         <p className="text-sm text-muted-foreground">
-          Licensed under CC BY-NC-SA 4.0
+          Άδεια χρήσης CC BY-NC-SA 4.0
         </p>
       </div>
     </div>

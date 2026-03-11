@@ -10,6 +10,7 @@ import { MovementReport } from "@/components/reports/MovementReport";
 import { LowStockHistory } from "@/components/reports/LowStockHistory";
 import { UsageReport } from "@/components/reports/UsageReport";
 import { exportReportXlsx, type ReportColumn } from "@/lib/export";
+import { statusLabel } from "@/lib/utils";
 import type {
   SnapshotRow,
   MovementRow,
@@ -23,47 +24,47 @@ import type {
 
 const snapshotCols: ReportColumn<SnapshotRow>[] = [
   { header: "Barcode", width: 20, accessor: (r) => r.barcode },
-  { header: "Description", width: 40, accessor: (r) => r.description },
-  { header: "Quantity", width: 12, accessor: (r) => r.quantity },
-  { header: "Location", width: 20, accessor: (r) => r.locationName },
-  { header: "Last Updated", width: 20, accessor: (r) => r.updatedAt },
+  { header: "Περιγραφή", width: 40, accessor: (r) => r.description },
+  { header: "Ποσότητα", width: 12, accessor: (r) => r.quantity },
+  { header: "Τοποθεσία", width: 20, accessor: (r) => r.locationName },
+  { header: "Τελευταία Ενημέρωση", width: 20, accessor: (r) => r.updatedAt },
 ];
 
 const movementCols: ReportColumn<MovementRow>[] = [
   { header: "Barcode", width: 20, accessor: (r) => r.barcode },
-  { header: "Description", width: 40, accessor: (r) => r.description },
-  { header: "Added", width: 12, accessor: (r) => r.totalAdded },
-  { header: "Removed", width: 12, accessor: (r) => r.totalRemoved },
-  { header: "Transfers In", width: 14, accessor: (r) => r.transfersIn },
-  { header: "Transfers Out", width: 14, accessor: (r) => r.transfersOut },
-  { header: "Net Change", width: 12, accessor: (r) => r.netChange },
+  { header: "Περιγραφή", width: 40, accessor: (r) => r.description },
+  { header: "Προσθήκες", width: 12, accessor: (r) => r.totalAdded },
+  { header: "Αφαιρέσεις", width: 12, accessor: (r) => r.totalRemoved },
+  { header: "Εισερχόμενες Μεταφορές", width: 14, accessor: (r) => r.transfersIn },
+  { header: "Εξερχόμενες Μεταφορές", width: 14, accessor: (r) => r.transfersOut },
+  { header: "Καθαρή Μεταβολή", width: 12, accessor: (r) => r.netChange },
 ];
 
 const lowStockCols: ReportColumn<LowStockHistoryRow>[] = [
   { header: "Barcode", width: 20, accessor: (r) => r.barcode },
-  { header: "Description", width: 40, accessor: (r) => r.description },
-  { header: "Location", width: 20, accessor: (r) => r.locationName },
-  { header: "Times Below", width: 14, accessor: (r) => r.timesBelowThreshold },
-  { header: "Days Below", width: 14, accessor: (r) => r.totalDaysBelow },
-  { header: "Current Qty", width: 14, accessor: (r) => r.currentQty },
-  { header: "Status", width: 12, accessor: (r) => r.status },
+  { header: "Περιγραφή", width: 40, accessor: (r) => r.description },
+  { header: "Τοποθεσία", width: 20, accessor: (r) => r.locationName },
+  { header: "Φορές Κάτω", width: 14, accessor: (r) => r.timesBelowThreshold },
+  { header: "Ημέρες Κάτω", width: 14, accessor: (r) => r.totalDaysBelow },
+  { header: "Τρέχουσα Ποσ.", width: 14, accessor: (r) => r.currentQty },
+  { header: "Κατάσταση", width: 12, accessor: (r) => statusLabel(r.status) },
 ];
 
 const usageCols: ReportColumn<UsageRow>[] = [
   { header: "Barcode", width: 20, accessor: (r) => r.barcode },
-  { header: "Description", width: 40, accessor: (r) => r.description },
-  { header: "Current Qty", width: 14, accessor: (r) => r.currentQty },
-  { header: "Total Consumed", width: 16, accessor: (r) => r.totalConsumed },
-  { header: "Avg Daily Usage", width: 16, accessor: (r) => r.avgDailyUsage },
+  { header: "Περιγραφή", width: 40, accessor: (r) => r.description },
+  { header: "Τρέχουσα Ποσ.", width: 14, accessor: (r) => r.currentQty },
+  { header: "Συνολική Κατανάλωση", width: 16, accessor: (r) => r.totalConsumed },
+  { header: "Μέση Ημερήσια Χρήση", width: 16, accessor: (r) => r.avgDailyUsage },
   {
-    header: "Est. Depletion",
+    header: "Εκτ. Εξάντληση",
     width: 16,
     accessor: (r) =>
       r.estDaysUntilDepletion == null
-        ? "N/A"
+        ? "Δ/Υ"
         : r.estDaysUntilDepletion === 0
-          ? "Depleted"
-          : `${r.estDaysUntilDepletion} days`,
+          ? "Εξαντλημένο"
+          : `${r.estDaysUntilDepletion} ημέρες`,
   },
 ];
 
@@ -75,13 +76,13 @@ function handleExport(data: ReportData | null) {
   if (!data) return;
   switch (data.tab) {
     case "snapshot":
-      return exportReportXlsx("Inventory Snapshot", snapshotCols, data.rows);
+      return exportReportXlsx("Στιγμιότυπο Αποθέματος", snapshotCols, data.rows);
     case "movement":
-      return exportReportXlsx("Movement Report", movementCols, data.rows);
+      return exportReportXlsx("Αναφορά Κινήσεων", movementCols, data.rows);
     case "low_stock":
-      return exportReportXlsx("Low Stock History", lowStockCols, data.rows);
+      return exportReportXlsx("Ιστορικό Χαμηλού Αποθέματος", lowStockCols, data.rows);
     case "usage":
-      return exportReportXlsx("Reagent Usage", usageCols, data.rows);
+      return exportReportXlsx("Χρήση Αντιδραστηρίων", usageCols, data.rows);
   }
 }
 
@@ -109,7 +110,7 @@ export function ReportsPage() {
     <div className="space-y-4">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <h1 className="text-2xl font-bold">Αναφορές</h1>
         <div className="flex gap-2">
           <LocationFilter
             value={locationId}
@@ -124,11 +125,11 @@ export function ReportsPage() {
               try {
                 await handleExport(data);
               } catch (err) {
-                alert(`Export failed: ${err}`);
+                alert(`Αποτυχία εξαγωγής: ${err}`);
               }
             }}
           >
-            <FileSpreadsheet className="mr-1 h-4 w-4" /> Export XLSX
+            <FileSpreadsheet className="mr-1 h-4 w-4" /> Εξαγωγή XLSX
           </Button>
         </div>
       </div>
@@ -144,10 +145,10 @@ export function ReportsPage() {
         onValueChange={(value) => setTab(value as ReportTab)}
       >
         <TabsList>
-          <TabsTrigger value="snapshot">Inventory Snapshot</TabsTrigger>
-          <TabsTrigger value="movement">Movement</TabsTrigger>
-          <TabsTrigger value="low_stock">Low Stock History</TabsTrigger>
-          <TabsTrigger value="usage">Reagent Usage</TabsTrigger>
+          <TabsTrigger value="snapshot">Στιγμιότυπο Αποθέματος</TabsTrigger>
+          <TabsTrigger value="movement">Κινήσεις</TabsTrigger>
+          <TabsTrigger value="low_stock">Ιστορικό Χαμηλού Αποθέματος</TabsTrigger>
+          <TabsTrigger value="usage">Χρήση Αντιδραστηρίων</TabsTrigger>
         </TabsList>
 
         {/* Error */}
@@ -159,7 +160,7 @@ export function ReportsPage() {
 
         {/* Loading */}
         {loading && (
-          <p className="text-sm text-muted-foreground">Loading report...</p>
+          <p className="text-sm text-muted-foreground">Φόρτωση αναφοράς...</p>
         )}
 
         {/* Tab content */}

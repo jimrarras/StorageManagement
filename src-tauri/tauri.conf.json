@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "StorageManagement",
+        "title": "Διαχείριση Αποθήκης",
         "width": 1100,
         "height": 700,
         "minWidth": 800,

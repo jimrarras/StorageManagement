@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getTotalUniqueItems,
   getTotalQuantity,
@@ -24,9 +24,12 @@ export function useDashboard(locationId?: number) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [movementDays, setMovementDays] = useState(30);
+  const initialRef = useRef(true);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
+    if (initialRef.current) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -58,6 +61,7 @@ export function useDashboard(locationId?: number) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
+      initialRef.current = false;
     }
   }, [movementDays, locationId]);
 

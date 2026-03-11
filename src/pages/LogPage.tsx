@@ -10,7 +10,7 @@ interface LogPageProps {
 }
 
 export function LogPage({ searchQuery }: LogPageProps) {
-  const { entries, loading, search } = useActivity();
+  const { entries, loading, hasMore, search, loadMore } = useActivity();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,6 +31,13 @@ export function LogPage({ searchQuery }: LogPageProps) {
         </Button>
       </div>
       <ActivityTable data={entries} />
+      {hasMore && (
+        <div className="flex justify-center">
+          <Button variant="outline" onClick={loadMore}>
+            Load More
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

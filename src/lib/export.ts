@@ -113,6 +113,63 @@ export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<bool
   return saveWorkbook(workbook, "Activity.xlsx");
 }
 
+export interface ReportColumn<T> {
+  header: string;
+  width: number;
+  accessor: (row: T) => string | number;
+}
+
+export async function exportReportXlsx<T>(
+  title: string,
+  columns: ReportColumn<T>[],
+  rows: T[]
+): Promise<boolean> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Report");
+
+  // Title row — merge across all columns (numeric API works for any column count)
+  sheet.mergeCells(1, 1, 1, columns.length);
+  const titleCell = sheet.getCell("A1");
+  titleCell.value = `${title} — ${new Date().toLocaleDateString("el-GR")}`;
+  titleCell.font = { bold: true, size: 14 };
+
+  // Empty row
+  sheet.addRow([]);
+
+  // Headers
+  const headerRow = sheet.addRow(columns.map((c) => c.header));
+  headerRow.font = { bold: true };
+  headerRow.eachCell((cell) => {
+    cell.border = {
+      top: { style: "thin" },
+      bottom: { style: "thin" },
+      left: { style: "thin" },
+      right: { style: "thin" },
+    };
+  });
+
+  // Data
+  for (const item of rows) {
+    const row = sheet.addRow(columns.map((c) => c.accessor(item)));
+    row.eachCell((cell) => {
+      cell.border = {
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+  }
+
+  // Column widths
+  columns.forEach((c, i) => {
+    sheet.getColumn(i + 1).width = c.width;
+  });
+
+  const filename = `${title.replace(/ /g, "_")}.xlsx`;
+  return saveWorkbook(workbook, filename);
+}
+
 async function saveWorkbook(workbook: ExcelJS.Workbook, defaultName: string): Promise<boolean> {
   const filePath = await save({
     defaultPath: defaultName,

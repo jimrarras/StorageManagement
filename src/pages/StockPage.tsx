@@ -33,8 +33,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
       search(searchQuery);
     }, 300);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  }, [searchQuery, search]);
 
   const handleAdd = async (data: { barcode: string; description: string; quantity: number }) => {
     try {
@@ -58,8 +57,12 @@ export function StockPage({ searchQuery }: StockPageProps) {
   const handleDelete = async () => {
     if (!selectedItem) return;
     if (confirm("Are you sure you want to delete this item?")) {
-      await deleteItem(selectedItem.id);
-      setSelectedItem(null);
+      try {
+        await deleteItem(selectedItem.id);
+        setSelectedItem(null);
+      } catch (err) {
+        alert(`Failed to delete item: ${err}`);
+      }
     }
   };
 

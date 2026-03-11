@@ -58,7 +58,7 @@ export function useInventory(locationId?: number) {
     await refresh();
   };
 
-  const search = async (query: string) => {
+  const search = useCallback(async (query: string) => {
     if (!query.trim()) {
       await refresh();
       return;
@@ -67,7 +67,7 @@ export function useInventory(locationId?: number) {
     const data = await searchInventory(query, locationId);
     setItems(data);
     setLoading(false);
-  };
+  }, [locationId, refresh]);
 
   const reorder = async (updates: { id: number; sortOrder: number }[]) => {
     await updateSortOrder(updates);

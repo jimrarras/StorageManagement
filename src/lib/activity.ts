@@ -7,17 +7,19 @@ export type ActivityEntry = typeof activityLog.$inferSelect & {
   toLocationName?: string;
 };
 
-export async function getAllActivity(): Promise<ActivityEntry[]> {
+export async function getAllActivity(limit = 500, offset = 0): Promise<ActivityEntry[]> {
   const db = getDb();
   const rows = await db
     .select()
     .from(activityLog)
-    .orderBy(desc(activityLog.createdAt));
+    .orderBy(desc(activityLog.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return enrichWithLocationNames(rows);
 }
 
-export async function searchActivity(query: string): Promise<ActivityEntry[]> {
+export async function searchActivity(query: string, limit = 500, offset = 0): Promise<ActivityEntry[]> {
   const db = getDb();
   const rows = await db
     .select()
@@ -28,7 +30,9 @@ export async function searchActivity(query: string): Promise<ActivityEntry[]> {
         like(activityLog.createdAt, `%${query}%`)
       )
     )
-    .orderBy(desc(activityLog.createdAt));
+    .orderBy(desc(activityLog.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return enrichWithLocationNames(rows);
 }

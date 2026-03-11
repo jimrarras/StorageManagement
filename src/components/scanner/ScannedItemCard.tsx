@@ -43,7 +43,7 @@ export function ScannedItemCard({ item, onAdd, onRemove }: ScannedItemCardProps)
         <Button onClick={() => onAdd(item.barcode, amount)} className="bg-green-600 hover:bg-green-700">
           <Plus className="mr-1 h-4 w-4" /> Add
         </Button>
-        <Button onClick={() => onRemove(item.barcode, amount)} variant="destructive">
+        <Button onClick={() => onRemove(item.barcode, amount)} variant="destructive" disabled={item.quantity === 0}>
           <Minus className="mr-1 h-4 w-4" /> Remove
         </Button>
       </div>

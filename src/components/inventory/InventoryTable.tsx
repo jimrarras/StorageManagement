@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -93,11 +94,13 @@ export function InventoryTable({
   onReorder,
   locationMap,
 }: InventoryTableProps) {
+  const meta = useMemo(() => ({ locationMap }), [locationMap]);
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    meta: { locationMap },
+    meta,
   });
 
   const handleDragEnd = (event: DragEndEvent) => {

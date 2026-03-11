@@ -115,7 +115,9 @@ export function SettingsPage() {
           </Button>
         </div>
         {importStatus && (
-          <p className="text-sm text-green-600">{importStatus}</p>
+          <p className={`text-sm ${importStatus.startsWith("Import failed") ? "text-red-600" : "text-green-600"}`}>
+            {importStatus}
+          </p>
         )}
       </div>
 

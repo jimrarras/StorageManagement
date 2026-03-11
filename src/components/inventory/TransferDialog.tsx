@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,14 @@ export function TransferDialog({
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [transferring, setTransferring] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setToLocationId(null);
+      setQuantity(1);
+      setError(null);
+    }
+  }, [open]);
 
   const otherLocations = locations.filter((l) => l.id !== item?.locationId);
 

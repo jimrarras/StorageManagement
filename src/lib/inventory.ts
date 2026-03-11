@@ -1,4 +1,4 @@
-import { eq, like, or, and, desc } from "drizzle-orm";
+import { eq, or, and, desc, sql } from "drizzle-orm";
 import { getDb, getRawDb } from "./db";
 import { inventory, activityLog } from "./schema";
 
@@ -49,30 +49,40 @@ export async function getInventoryByBarcodeAndLocation(
 
 export async function addInventoryItem(item: NewInventoryItem): Promise<void> {
   const db = getDb();
+  const sqlite = getRawDb();
   const locationId = item.locationId ?? 1;
-  const existing = await getInventoryByBarcodeAndLocation(
-    item.barcode,
-    locationId
-  );
 
-  if (existing) {
-    await db
-      .update(inventory)
-      .set({
-        quantity: existing.quantity + (item.quantity ?? 0),
-        updatedAt: nowTimestamp(),
-      })
-      .where(eq(inventory.id, existing.id));
-  } else {
-    await db.insert(inventory).values({ ...item, locationId });
+  await sqlite.execute("BEGIN TRANSACTION");
+  try {
+    const existing = await getInventoryByBarcodeAndLocation(
+      item.barcode,
+      locationId
+    );
+
+    if (existing) {
+      await db
+        .update(inventory)
+        .set({
+          quantity: existing.quantity + (item.quantity ?? 0),
+          updatedAt: nowTimestamp(),
+        })
+        .where(eq(inventory.id, existing.id));
+    } else {
+      await db.insert(inventory).values({ ...item, locationId });
+    }
+
+    await db.insert(activityLog).values({
+      barcode: item.barcode,
+      action: "ADD",
+      quantityChange: item.quantity,
+      locationId,
+    });
+
+    await sqlite.execute("COMMIT");
+  } catch (e) {
+    await sqlite.execute("ROLLBACK");
+    throw e;
   }
-
-  await db.insert(activityLog).values({
-    barcode: item.barcode,
-    action: "ADD",
-    quantityChange: item.quantity,
-    locationId,
-  });
 }
 
 export async function removeQuantity(
@@ -81,23 +91,33 @@ export async function removeQuantity(
   locationId: number = 1
 ): Promise<void> {
   const db = getDb();
-  const item = await getInventoryByBarcodeAndLocation(barcode, locationId);
-  if (!item) throw new Error(`Item with barcode ${barcode} not found`);
+  const sqlite = getRawDb();
 
-  const newQty = Math.max(0, item.quantity - amount);
-  const actualRemoved = item.quantity - newQty;
+  await sqlite.execute("BEGIN TRANSACTION");
+  try {
+    const item = await getInventoryByBarcodeAndLocation(barcode, locationId);
+    if (!item) throw new Error(`Item with barcode ${barcode} not found`);
 
-  await db
-    .update(inventory)
-    .set({ quantity: newQty, updatedAt: nowTimestamp() })
-    .where(eq(inventory.id, item.id));
+    const newQty = Math.max(0, item.quantity - amount);
+    const actualRemoved = item.quantity - newQty;
 
-  await db.insert(activityLog).values({
-    barcode,
-    action: "REMOVE",
-    quantityChange: -actualRemoved,
-    locationId,
-  });
+    await db
+      .update(inventory)
+      .set({ quantity: newQty, updatedAt: nowTimestamp() })
+      .where(eq(inventory.id, item.id));
+
+    await db.insert(activityLog).values({
+      barcode,
+      action: "REMOVE",
+      quantityChange: -actualRemoved,
+      locationId,
+    });
+
+    await sqlite.execute("COMMIT");
+  } catch (e) {
+    await sqlite.execute("ROLLBACK");
+    throw e;
+  }
 }
 
 export async function updateInventoryItem(
@@ -105,40 +125,60 @@ export async function updateInventoryItem(
   updates: { barcode?: string; description?: string; quantity?: number }
 ): Promise<void> {
   const db = getDb();
-  const item = (
-    await db.select().from(inventory).where(eq(inventory.id, id))
-  )[0];
-  if (!item) throw new Error(`Item with id ${id} not found`);
+  const sqlite = getRawDb();
 
-  await db
-    .update(inventory)
-    .set({ ...updates, updatedAt: nowTimestamp() })
-    .where(eq(inventory.id, id));
+  await sqlite.execute("BEGIN TRANSACTION");
+  try {
+    const item = (
+      await db.select().from(inventory).where(eq(inventory.id, id))
+    )[0];
+    if (!item) throw new Error(`Item with id ${id} not found`);
 
-  await db.insert(activityLog).values({
-    barcode: updates.barcode ?? item.barcode,
-    action: "EDIT",
-    quantityChange:
-      updates.quantity != null ? updates.quantity - item.quantity : null,
-    locationId: item.locationId,
-  });
+    await db
+      .update(inventory)
+      .set({ ...updates, updatedAt: nowTimestamp() })
+      .where(eq(inventory.id, id));
+
+    await db.insert(activityLog).values({
+      barcode: updates.barcode ?? item.barcode,
+      action: "EDIT",
+      quantityChange:
+        updates.quantity != null ? updates.quantity - item.quantity : null,
+      locationId: item.locationId,
+    });
+
+    await sqlite.execute("COMMIT");
+  } catch (e) {
+    await sqlite.execute("ROLLBACK");
+    throw e;
+  }
 }
 
 export async function deleteInventoryItem(id: number): Promise<void> {
   const db = getDb();
-  const item = (
-    await db.select().from(inventory).where(eq(inventory.id, id))
-  )[0];
-  if (!item) throw new Error(`Item with id ${id} not found`);
+  const sqlite = getRawDb();
 
-  await db.insert(activityLog).values({
-    barcode: item.barcode,
-    action: "DELETE",
-    quantityChange: -item.quantity,
-    locationId: item.locationId,
-  });
+  await sqlite.execute("BEGIN TRANSACTION");
+  try {
+    const item = (
+      await db.select().from(inventory).where(eq(inventory.id, id))
+    )[0];
+    if (!item) throw new Error(`Item with id ${id} not found`);
 
-  await db.delete(inventory).where(eq(inventory.id, id));
+    await db.insert(activityLog).values({
+      barcode: item.barcode,
+      action: "DELETE",
+      quantityChange: -item.quantity,
+      locationId: item.locationId,
+    });
+
+    await db.delete(inventory).where(eq(inventory.id, id));
+
+    await sqlite.execute("COMMIT");
+  } catch (e) {
+    await sqlite.execute("ROLLBACK");
+    throw e;
+  }
 }
 
 export async function transferItem(
@@ -150,15 +190,15 @@ export async function transferItem(
   const db = getDb();
   const sqlite = getRawDb();
 
-  const source = await getInventoryByBarcodeAndLocation(
-    barcode,
-    fromLocationId
-  );
-  if (!source) throw new Error("Source item not found");
-  if (source.quantity < quantity) throw new Error("Insufficient quantity");
-
   await sqlite.execute("BEGIN TRANSACTION");
   try {
+    const source = await getInventoryByBarcodeAndLocation(
+      barcode,
+      fromLocationId
+    );
+    if (!source) throw new Error("Source item not found");
+    if (source.quantity < quantity) throw new Error("Insufficient quantity");
+
     // Decrement source
     await db
       .update(inventory)
@@ -209,9 +249,26 @@ export async function updateSortOrder(
   updates: { id: number; sortOrder: number }[]
 ): Promise<void> {
   const db = getDb();
-  for (const { id, sortOrder } of updates) {
-    await db.update(inventory).set({ sortOrder }).where(eq(inventory.id, id));
+  const sqlite = getRawDb();
+
+  await sqlite.execute("BEGIN TRANSACTION");
+  try {
+    for (const { id, sortOrder } of updates) {
+      await db
+        .update(inventory)
+        .set({ sortOrder })
+        .where(eq(inventory.id, id));
+    }
+
+    await sqlite.execute("COMMIT");
+  } catch (e) {
+    await sqlite.execute("ROLLBACK");
+    throw e;
   }
+}
+
+function escapeLike(s: string): string {
+  return s.replace(/[%_\\]/g, "\\$&");
 }
 
 export async function searchInventory(
@@ -219,9 +276,10 @@ export async function searchInventory(
   locationId?: number
 ): Promise<InventoryItem[]> {
   const db = getDb();
+  const escaped = "%" + escapeLike(query) + "%";
   const likeFilter = or(
-    like(inventory.barcode, `%${query}%`),
-    like(inventory.description, `%${query}%`)
+    sql`${inventory.barcode} LIKE ${escaped} ESCAPE '\\'`,
+    sql`${inventory.description} LIKE ${escaped} ESCAPE '\\'`
   );
   const where =
     locationId != null

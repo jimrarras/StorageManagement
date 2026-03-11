@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ScannerView } from "@/components/scanner/ScannerView";
 import { ScannedItemCard } from "@/components/scanner/ScannedItemCard";
 import { ItemDialog } from "@/components/inventory/ItemDialog";
@@ -15,19 +15,25 @@ import {
   getInventoryByBarcode,
   getInventoryByBarcodeAndLocation,
   removeQuantity,
+  addInventoryItem,
+  getNextSortOrder,
   type InventoryItem,
 } from "@/lib/inventory";
-import { useInventory } from "@/hooks/useInventory";
 import { useLocations } from "@/hooks/useLocations";
 
 export function ScanPage() {
-  const { addItem } = useInventory();
   const { locations } = useLocations();
   const [scannedItem, setScannedItem] = useState<InventoryItem | null>(null);
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null);
   const [multipleItems, setMultipleItems] = useState<InventoryItem[] | null>(null);
   const [newItemLocationId, setNewItemLocationId] = useState(1);
   const [scanning, setScanning] = useState(true);
+
+  useEffect(() => {
+    if (locations.length > 0) {
+      setNewItemLocationId(locations[0].id);
+    }
+  }, [locations]);
 
   const handleScan = useCallback(async (barcode: string) => {
     setScanning(false);
@@ -49,7 +55,8 @@ export function ScanPage() {
 
   const handleAdd = async (barcode: string, amount: number) => {
     const locationId = scannedItem?.locationId ?? 1;
-    await addItem(barcode, scannedItem?.description ?? "", amount, locationId);
+    const sortOrder = await getNextSortOrder();
+    await addInventoryItem({ barcode, description: scannedItem?.description ?? "", quantity: amount, locationId, sortOrder });
     const updated = await getInventoryByBarcodeAndLocation(barcode, locationId);
     setScannedItem(updated ?? null);
   };
@@ -62,7 +69,8 @@ export function ScanPage() {
   };
 
   const handleNewItem = async (data: { barcode: string; description: string; quantity: number }) => {
-    await addItem(data.barcode, data.description, data.quantity, newItemLocationId);
+    const sortOrder = await getNextSortOrder();
+    await addInventoryItem({ barcode: data.barcode, description: data.description, quantity: data.quantity, locationId: newItemLocationId, sortOrder });
     const created = await getInventoryByBarcodeAndLocation(data.barcode, newItemLocationId);
     setScannedItem(created ?? null);
     setUnknownBarcode(null);

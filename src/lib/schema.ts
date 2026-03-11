@@ -24,3 +24,8 @@ export const activityLog = sqliteTable("activity_log", {
     .notNull()
     .default(sql`(datetime('now'))`),
 });
+
+export const settings = sqliteTable("settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});

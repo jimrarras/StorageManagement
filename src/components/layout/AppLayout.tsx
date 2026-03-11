@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Sidebar, type Page } from "./Sidebar";
 import { SearchBar } from "./SearchBar";
+import { DashboardPage } from "@/pages/DashboardPage";
 import { StockPage } from "@/pages/StockPage";
 import { LogPage } from "@/pages/LogPage";
 import { ScanPage } from "@/pages/ScanPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 
 export function AppLayout() {
-  const [currentPage, setCurrentPage] = useState<Page>("stock");
+  const [currentPage, setCurrentPage] = useState<Page>("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Reset search on page change
@@ -28,6 +29,7 @@ export function AppLayout() {
             />
           </div>
         )}
+        {currentPage === "dashboard" && <DashboardPage />}
         {currentPage === "stock" && <StockPage searchQuery={searchQuery} />}
         {currentPage === "log" && <LogPage searchQuery={searchQuery} />}
         {currentPage === "scan" && <ScanPage />}

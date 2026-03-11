@@ -1,10 +1,11 @@
-import { Package, ScrollText, ScanBarcode, Settings } from "lucide-react";
+import { LayoutDashboard, Package, ScrollText, ScanBarcode, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-export type Page = "stock" | "log" | "scan" | "settings";
+export type Page = "dashboard" | "stock" | "log" | "scan" | "settings";
 
 const navItems: { page: Page; label: string; icon: React.ElementType }[] = [
+  { page: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { page: "stock", label: "Stock", icon: Package },
   { page: "log", label: "Activity Log", icon: ScrollText },
   { page: "scan", label: "Scan", icon: ScanBarcode },

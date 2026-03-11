@@ -39,6 +39,10 @@ const MIGRATIONS = [
     quantity_change INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  `CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )`,
 ];
 
 export async function initDatabase() {
@@ -49,6 +53,11 @@ export async function initDatabase() {
   for (const migration of MIGRATIONS) {
     await _sqlite.execute(migration);
   }
+
+  // Seed default settings
+  await _sqlite.execute(
+    `INSERT OR IGNORE INTO settings (key, value) VALUES ('low_stock_threshold', '5')`
+  );
 
   _db = createDrizzle(_sqlite);
   return _db;

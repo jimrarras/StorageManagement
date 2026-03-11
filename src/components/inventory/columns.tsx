@@ -28,6 +28,15 @@ export const columns: ColumnDef<InventoryItem>[] = [
     size: 150,
   },
   {
+    accessorKey: "locationId",
+    header: "Location",
+    cell: ({ row, table }) => {
+      const locationMap = (table.options.meta as { locationMap?: Map<number, string> })?.locationMap;
+      return locationMap?.get(row.original.locationId) ?? "\u2014";
+    },
+    size: 120,
+  },
+  {
     accessorKey: "description",
     header: "Description",
     cell: ({ row }) => {

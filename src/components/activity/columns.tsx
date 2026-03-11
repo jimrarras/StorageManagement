@@ -7,6 +7,7 @@ const actionColors: Record<string, string> = {
   REMOVE: "bg-red-100 text-red-800",
   EDIT: "bg-blue-100 text-blue-800",
   DELETE: "bg-gray-100 text-gray-800",
+  TRANSFER: "bg-purple-100 text-purple-800",
 };
 
 export const activityColumns: ColumnDef<ActivityEntry>[] = [
@@ -42,5 +43,17 @@ export const activityColumns: ColumnDef<ActivityEntry>[] = [
       return change > 0 ? `+${change}` : `${change}`;
     },
     size: 100,
+  },
+  {
+    id: "location",
+    header: "Location",
+    cell: ({ row }) => {
+      const entry = row.original;
+      if (entry.action === "TRANSFER") {
+        return `${entry.locationName ?? "?"} → ${entry.toLocationName ?? "?"}`;
+      }
+      return entry.locationName ?? "—";
+    },
+    size: 160,
   },
 ];

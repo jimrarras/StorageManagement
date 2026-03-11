@@ -4,12 +4,15 @@ import { writeFile } from "@tauri-apps/plugin-fs";
 import type { InventoryItem } from "./inventory";
 import type { ActivityEntry } from "./activity";
 
-export async function exportInventoryXlsx(items: InventoryItem[]): Promise<boolean> {
+export async function exportInventoryXlsx(
+  items: InventoryItem[],
+  locationMap?: Map<number, string>
+): Promise<boolean> {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Inventory");
 
   // Title row
-  sheet.mergeCells("A1:D1");
+  sheet.mergeCells("A1:E1");
   const titleCell = sheet.getCell("A1");
   titleCell.value = `Inventory Report — ${new Date().toLocaleDateString("el-GR")}`;
   titleCell.font = { bold: true, size: 14 };
@@ -18,7 +21,7 @@ export async function exportInventoryXlsx(items: InventoryItem[]): Promise<boole
   sheet.addRow([]);
 
   // Headers
-  const headerRow = sheet.addRow(["Barcode", "Description", "Quantity", "Last Updated"]);
+  const headerRow = sheet.addRow(["Barcode", "Description", "Quantity", "Location", "Last Updated"]);
   headerRow.font = { bold: true };
   headerRow.eachCell((cell) => {
     cell.border = {
@@ -31,7 +34,13 @@ export async function exportInventoryXlsx(items: InventoryItem[]): Promise<boole
 
   // Data
   for (const item of items) {
-    const row = sheet.addRow([item.barcode, item.description, item.quantity, item.updatedAt]);
+    const row = sheet.addRow([
+      item.barcode,
+      item.description,
+      item.quantity,
+      locationMap?.get(item.locationId) ?? "—",
+      item.updatedAt,
+    ]);
     row.eachCell((cell) => {
       cell.border = {
         top: { style: "thin" },
@@ -46,6 +55,7 @@ export async function exportInventoryXlsx(items: InventoryItem[]): Promise<boole
   sheet.getColumn(2).width = 40;
   sheet.getColumn(3).width = 12;
   sheet.getColumn(4).width = 20;
+  sheet.getColumn(5).width = 20;
 
   return saveWorkbook(workbook, "Inventory.xlsx");
 }
@@ -54,14 +64,14 @@ export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<bool
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Activity Log");
 
-  sheet.mergeCells("A1:D1");
+  sheet.mergeCells("A1:E1");
   const titleCell = sheet.getCell("A1");
   titleCell.value = `Activity Report — ${new Date().toLocaleDateString("el-GR")}`;
   titleCell.font = { bold: true, size: 14 };
 
   sheet.addRow([]);
 
-  const headerRow = sheet.addRow(["Date/Time", "Barcode", "Action", "Qty Change"]);
+  const headerRow = sheet.addRow(["Date/Time", "Barcode", "Action", "Qty Change", "Location"]);
   headerRow.font = { bold: true };
   headerRow.eachCell((cell) => {
     cell.border = {
@@ -73,11 +83,16 @@ export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<bool
   });
 
   for (const entry of entries) {
+    const location =
+      entry.action === "TRANSFER"
+        ? `${entry.locationName ?? "?"} → ${entry.toLocationName ?? "?"}`
+        : entry.locationName ?? "—";
     const row = sheet.addRow([
       entry.createdAt,
       entry.barcode,
       entry.action,
       entry.quantityChange ?? "—",
+      location,
     ]);
     row.eachCell((cell) => {
       cell.border = {
@@ -93,6 +108,7 @@ export async function exportActivityXlsx(entries: ActivityEntry[]): Promise<bool
   sheet.getColumn(2).width = 20;
   sheet.getColumn(3).width = 12;
   sheet.getColumn(4).width = 14;
+  sheet.getColumn(5).width = 24;
 
   return saveWorkbook(workbook, "Activity.xlsx");
 }

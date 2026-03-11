@@ -13,13 +13,13 @@ import {
 interface DashboardData {
   totalItems: number;
   totalQuantity: number;
-  lowStockItems: { id: number; barcode: string; description: string; quantity: number }[];
+  lowStockItems: { id: number; barcode: string; description: string; quantity: number; locationId: number }[];
   itemsAddedThisMonth: number;
   stockMovement: DailyMovement[];
   mostUsed: ReagentUsage[];
 }
 
-export function useDashboard() {
+export function useDashboard(locationId?: number) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +38,12 @@ export function useDashboard() {
 
       const [totalItems, totalQuantity, lowStockItems, itemsAddedThisMonth, stockMovement, mostUsed] =
         await Promise.all([
-          getTotalUniqueItems(),
-          getTotalQuantity(),
-          getLowStockItems(),
-          getItemsAddedInPeriod(startOfMonth),
-          getStockMovement(movementDays),
-          getMostUsedReagents(movementDays),
+          getTotalUniqueItems(locationId),
+          getTotalQuantity(locationId),
+          getLowStockItems(locationId),
+          getItemsAddedInPeriod(startOfMonth, locationId),
+          getStockMovement(movementDays, locationId),
+          getMostUsedReagents(movementDays, 10, locationId),
         ]);
 
       setData({
@@ -59,7 +59,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [movementDays]);
+  }, [movementDays, locationId]);
 
   useEffect(() => {
     refresh();

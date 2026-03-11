@@ -31,9 +31,11 @@ import { CSS } from "@dnd-kit/utilities";
 interface InventoryTableProps {
   data: InventoryItem[];
   isFiltering: boolean;
+  disableDrag?: boolean;
   onRowClick: (item: InventoryItem) => void;
   onRowDoubleClick: (item: InventoryItem) => void;
   onReorder: (updates: { id: number; sortOrder: number }[]) => void;
+  locationMap?: Map<number, string>;
 }
 
 function SortableRow({
@@ -85,14 +87,17 @@ function SortableRow({
 export function InventoryTable({
   data,
   isFiltering,
+  disableDrag,
   onRowClick,
   onRowDoubleClick,
   onReorder,
+  locationMap,
 }: InventoryTableProps) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    meta: { locationMap },
   });
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -129,7 +134,7 @@ export function InventoryTable({
         </TableHeader>
         <TableBody>
           {rows.length ? (
-            isFiltering ? (
+            isFiltering || disableDrag ? (
               rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -171,7 +176,7 @@ export function InventoryTable({
     </div>
   );
 
-  if (isFiltering) {
+  if (isFiltering || disableDrag) {
     return tableContent;
   }
 

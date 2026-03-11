@@ -5,13 +5,20 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { importInventoryCsv, importReportCsv } from "@/lib/csv-import";
 import { getLowStockThreshold, setLowStockThreshold } from "@/lib/settings";
-import { Upload } from "lucide-react";
+import { useLocations } from "@/hooks/useLocations";
+import { Upload, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 
 export function SettingsPage() {
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [threshold, setThreshold] = useState(5);
   const [thresholdSaved, setThresholdSaved] = useState(false);
   const loadedRef = useRef(false);
+
+  const { locations, add: addLoc, rename: renameLoc, remove: removeLoc } = useLocations();
+  const [newLocationName, setNewLocationName] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
     getLowStockThreshold()
@@ -55,6 +62,37 @@ export function SettingsPage() {
       setImportStatus(`Imported ${count} activity log entries.`);
     } catch (err) {
       setImportStatus(`Import failed: ${err}`);
+    }
+  };
+
+  const handleAddLocation = async () => {
+    if (!newLocationName.trim()) return;
+    setLocationError(null);
+    try {
+      await addLoc(newLocationName.trim());
+      setNewLocationName("");
+    } catch (err) {
+      setLocationError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleRenameLocation = async (id: number) => {
+    if (!editingName.trim()) return;
+    setLocationError(null);
+    try {
+      await renameLoc(id, editingName.trim());
+      setEditingId(null);
+    } catch (err) {
+      setLocationError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleDeleteLocation = async (id: number) => {
+    setLocationError(null);
+    try {
+      await removeLoc(id);
+    } catch (err) {
+      setLocationError(err instanceof Error ? err.message : String(err));
     }
   };
 
@@ -103,6 +141,85 @@ export function SettingsPage() {
           />
           {thresholdSaved && <p className="text-sm text-green-600">Saved.</p>}
         </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Locations</h2>
+        <p className="text-sm text-muted-foreground">
+          Manage storage locations. Items can be tracked per location.
+        </p>
+
+        <div className="space-y-2">
+          {locations.map((loc) => (
+            <div key={loc.id} className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              {editingId === loc.id ? (
+                <>
+                  <Input
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleRenameLocation(loc.id);
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => handleRenameLocation(loc.id)}
+                  >
+                    Save
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <span className="flex-1 text-sm">{loc.name}</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditingId(loc.id);
+                      setEditingName(loc.name);
+                    }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  {loc.id !== 1 && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleDeleteLocation(loc.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <Input
+            placeholder="New location name..."
+            value={newLocationName}
+            onChange={(e) => setNewLocationName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAddLocation();
+            }}
+            className="flex-1"
+          />
+          <Button size="sm" onClick={handleAddLocation}>
+            <Plus className="mr-1 h-4 w-4" /> Add
+          </Button>
+        </div>
+
+        {locationError && (
+          <p className="text-sm text-red-600">{locationError}</p>
+        )}
       </div>
 
       <Separator />

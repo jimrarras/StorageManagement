@@ -14,14 +14,16 @@ interface LowStockItem {
   barcode: string;
   description: string;
   quantity: number;
+  locationId: number;
 }
 
 interface LowStockListProps {
   items: LowStockItem[];
+  locationMap?: Map<number, string>;
   onItemClick?: (barcode: string) => void;
 }
 
-export function LowStockList({ items, onItemClick }: LowStockListProps) {
+export function LowStockList({ items, locationMap, onItemClick }: LowStockListProps) {
   return (
     <Card className="p-4">
       <div className="mb-3 flex items-center gap-2">
@@ -36,6 +38,7 @@ export function LowStockList({ items, onItemClick }: LowStockListProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Description</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead className="w-20 text-right">Qty</TableHead>
               </TableRow>
             </TableHeader>
@@ -47,6 +50,9 @@ export function LowStockList({ items, onItemClick }: LowStockListProps) {
                   onClick={() => onItemClick?.(item.barcode)}
                 >
                   <TableCell className="text-sm">{item.description}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {locationMap?.get(item.locationId) ?? "\u2014"}
+                  </TableCell>
                   <TableCell className="text-right font-mono text-sm font-bold text-red-600">
                     {item.quantity}
                   </TableCell>

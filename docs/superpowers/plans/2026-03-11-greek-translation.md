@@ -885,7 +885,7 @@ pnpm tsc --noEmit
 
 Fix any TypeScript errors that arise from the translations.
 
-- [ ] **Step 3: Build verification**
+- [ ] **Step 2: Build verification**
 
 ```bash
 pnpm build

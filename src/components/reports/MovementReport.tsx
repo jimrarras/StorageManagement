@@ -20,7 +20,7 @@ export function MovementReport({ rows }: MovementReportProps) {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No movement recorded in this period.
+        Δεν καταγράφηκαν κινήσεις σε αυτήν την περίοδο.
       </p>
     );
   }
@@ -30,12 +30,12 @@ export function MovementReport({ rows }: MovementReportProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Barcode</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead className="text-right">Added</TableHead>
-          <TableHead className="text-right">Removed</TableHead>
-          <TableHead className="text-right">Transfers In</TableHead>
-          <TableHead className="text-right">Transfers Out</TableHead>
-          <TableHead className="text-right">Net Change</TableHead>
+          <TableHead>Περιγραφή</TableHead>
+          <TableHead className="text-right">Προσθήκες</TableHead>
+          <TableHead className="text-right">Αφαιρέσεις</TableHead>
+          <TableHead className="text-right">Εισερχόμενες Μεταφορές</TableHead>
+          <TableHead className="text-right">Εξερχόμενες Μεταφορές</TableHead>
+          <TableHead className="text-right">Καθαρή Μεταβολή</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

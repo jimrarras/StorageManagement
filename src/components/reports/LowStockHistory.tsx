@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { LowStockHistoryRow } from "@/lib/reports";
+import { statusLabel } from "@/lib/utils";
 
 interface LowStockHistoryProps {
   rows: LowStockHistoryRow[];
@@ -23,7 +24,7 @@ export function LowStockHistory({ rows }: LowStockHistoryProps) {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No items went below threshold in this period.
+        Κανένα είδος δεν έπεσε κάτω από το όριο σε αυτήν την περίοδο.
       </p>
     );
   }
@@ -33,12 +34,12 @@ export function LowStockHistory({ rows }: LowStockHistoryProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Barcode</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Location</TableHead>
-          <TableHead className="text-right">Times Below</TableHead>
-          <TableHead className="text-right">Days Below</TableHead>
-          <TableHead className="text-right">Current Qty</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead>Περιγραφή</TableHead>
+          <TableHead>Τοποθεσία</TableHead>
+          <TableHead className="text-right">Φορές Κάτω</TableHead>
+          <TableHead className="text-right">Ημέρες Κάτω</TableHead>
+          <TableHead className="text-right">Τρέχουσα Ποσ.</TableHead>
+          <TableHead>Κατάσταση</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,7 +61,7 @@ export function LowStockHistory({ rows }: LowStockHistoryProps) {
             </TableCell>
             <TableCell>
               <Badge className={statusStyles[row.status]}>
-                {row.status}
+                {statusLabel(row.status)}
               </Badge>
             </TableCell>
           </TableRow>

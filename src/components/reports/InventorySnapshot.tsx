@@ -16,7 +16,7 @@ export function InventorySnapshot({ rows }: InventorySnapshotProps) {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No inventory items found.
+        Δεν βρέθηκαν είδη αποθέματος.
       </p>
     );
   }
@@ -43,9 +43,9 @@ export function InventorySnapshot({ rows }: InventorySnapshotProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Barcode</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead>Last Updated</TableHead>
+                <TableHead>Περιγραφή</TableHead>
+                <TableHead className="text-right">Ποσότητα</TableHead>
+                <TableHead>Τελευταία Ενημέρωση</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

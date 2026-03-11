@@ -2,11 +2,11 @@ import { Button } from "@/components/ui/button";
 import type { DatePreset } from "@/lib/reports";
 
 const presets: { key: DatePreset; label: string }[] = [
-  { key: "this_week", label: "This Week" },
-  { key: "this_month", label: "This Month" },
-  { key: "last_30", label: "30 Days" },
-  { key: "last_90", label: "90 Days" },
-  { key: "this_year", label: "This Year" },
+  { key: "this_week", label: "Αυτή την Εβδομάδα" },
+  { key: "this_month", label: "Αυτόν τον Μήνα" },
+  { key: "last_30", label: "30 Ημέρες" },
+  { key: "last_90", label: "90 Ημέρες" },
+  { key: "this_year", label: "Φέτος" },
 ];
 
 interface DateRangeBarProps {

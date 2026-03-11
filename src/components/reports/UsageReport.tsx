@@ -13,9 +13,9 @@ interface UsageReportProps {
 }
 
 function formatDepletion(days: number | null): string {
-  if (days === null) return "N/A";
-  if (days === 0) return "Depleted";
-  return `${days} days`;
+  if (days === null) return "Δ/Υ";
+  if (days === 0) return "Εξαντλημένο";
+  return `${days} ημέρες`;
 }
 
 function depletionColor(days: number | null): string {
@@ -40,11 +40,11 @@ export function UsageReport({ rows }: UsageReportProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Barcode</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead className="text-right">Current Qty</TableHead>
-          <TableHead className="text-right">Total Consumed</TableHead>
-          <TableHead className="text-right">Avg Daily Usage</TableHead>
-          <TableHead className="text-right">Est. Depletion</TableHead>
+          <TableHead>Περιγραφή</TableHead>
+          <TableHead className="text-right">Τρέχουσα Ποσ.</TableHead>
+          <TableHead className="text-right">Συνολική Κατανάλωση</TableHead>
+          <TableHead className="text-right">Μέση Ημερήσια Χρήση</TableHead>
+          <TableHead className="text-right">Εκτ. Εξάντληση</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

@@ -1,15 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import type { InventoryItem } from "@/lib/inventory";
-import { cn } from "@/lib/utils";
+import { contrastText } from "@/lib/utils";
 import { GripVertical } from "lucide-react";
-
-function getReagentColor(description: string): string | null {
-  if (description.includes("perCP")) return "bg-orange-600 text-white";
-  if (description.includes("FITC")) return "bg-green-800 text-white";
-  // Check PE with word boundary — match "PE", "PE-Cy5", "PE/Cy7" but not "SPECIMEN"
-  if (/\bPE\b/.test(description)) return "bg-red-600 text-white";
-  return null;
-}
 
 export const columns: ColumnDef<InventoryItem>[] = [
   {
@@ -39,11 +31,16 @@ export const columns: ColumnDef<InventoryItem>[] = [
   {
     accessorKey: "description",
     header: "Περιγραφή",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const desc = row.getValue<string>("description");
-      const colorClass = getReagentColor(desc);
+      const getItemColor = (table.options.meta as { getItemColor?: (desc: string) => string | null })?.getItemColor;
+      const color = getItemColor?.(desc) ?? null;
+      if (!color) return desc;
       return (
-        <span className={cn("px-2 py-1 rounded", colorClass)}>
+        <span
+          className="px-2 py-1 rounded"
+          style={{ backgroundColor: color, color: contrastText(color) }}
+        >
           {desc}
         </span>
       );

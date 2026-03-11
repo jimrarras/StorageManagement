@@ -37,6 +37,7 @@ interface InventoryTableProps {
   onRowDoubleClick: (item: InventoryItem) => void;
   onReorder: (updates: { id: number; sortOrder: number }[]) => void;
   locationMap?: Map<number, string>;
+  getItemColor?: (description: string) => string | null;
 }
 
 function SortableRow({
@@ -93,8 +94,9 @@ export function InventoryTable({
   onRowDoubleClick,
   onReorder,
   locationMap,
+  getItemColor,
 }: InventoryTableProps) {
-  const meta = useMemo(() => ({ locationMap }), [locationMap]);
+  const meta = useMemo(() => ({ locationMap, getItemColor }), [locationMap, getItemColor]);
 
   const table = useReactTable({
     data,

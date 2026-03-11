@@ -10,6 +10,7 @@ import { exportInventoryXlsx } from "@/lib/export";
 import { transferItem as doTransfer } from "@/lib/inventory";
 import type { InventoryItem } from "@/lib/inventory";
 import { TransferDialog } from "@/components/inventory/TransferDialog";
+import { useColorRules } from "@/hooks/useColorRules";
 
 interface StockPageProps {
   searchQuery: string;
@@ -27,6 +28,8 @@ export function StockPage({ searchQuery }: StockPageProps) {
     () => new Map(locations.map((l) => [l.id, l.name])),
     [locations]
   );
+
+  const { getItemColor } = useColorRules();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -106,6 +109,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
         onRowDoubleClick={(item) => { setSelectedItem(item); setDialogMode("edit"); }}
         onReorder={reorder}
         locationMap={locationMap}
+        getItemColor={getItemColor}
       />
 
       <ItemDialog

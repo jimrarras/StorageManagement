@@ -15,14 +15,14 @@ Three changes to the StorageManagement app:
 - `src/pages/ScanPage.tsx`
 - `src/components/scanner/ScannerView.tsx`
 - `src/components/scanner/ScannedItemCard.tsx`
-- Sidebar "Σάρωση" entry and its route
+- Sidebar "Σάρωση" entry and its route: remove `"scan"` from the `Page` type union in `Sidebar.tsx`, remove the `ScanPage` import and render branch in `AppLayout.tsx`
 - `html5-qrcode` npm dependency
 
 ### What's Added
 
 **`src/components/barcode/BarcodeActionButton.tsx`**
 
-Floating action button rendered in `AppLayout.tsx`, visible on all pages. Positioned bottom-right corner. Opens the `BarcodeActionDialog`. Keyboard shortcut: `F2`.
+Floating action button rendered in `AppLayout.tsx`, visible on all pages. Positioned bottom-right corner. Opens the `BarcodeActionDialog`. Keyboard shortcut: `F2` (registered in `BarcodeActionButton.tsx` via a global `keydown` listener; suppressed when the dialog is already open).
 
 **`src/components/barcode/BarcodeActionDialog.tsx`**
 
@@ -30,11 +30,11 @@ Modal dialog for rapid barcode operations:
 
 1. Opens with an auto-focused barcode text input field.
 2. On Enter/submit: calls `getInventoryByBarcode(barcode)`.
-3. **Single match:** Shows item details (barcode, description, current qty) and +/- controls with an amount input field.
-4. **Multiple matches (same barcode, different locations):** Shows a location picker listing each location + quantity. After selection, shows the +/- controls.
+3. **Single match:** Shows item details (barcode, description, current qty) and +/- controls with an amount input field. The add operation reuses `item.description` and `item.locationId` from the lookup result.
+4. **Multiple matches (same barcode, different locations):** Shows a location picker listing each location name + quantity. Location names are resolved via `useLocations()` hook (used internally by the dialog). After selection, shows the +/- controls.
 5. **No match:** Shows a "Νέο Είδος — Barcode Δεν Βρέθηκε" inline form with barcode pre-filled, description field, quantity field, and location picker (if multiple locations exist).
-6. After a successful add/remove/create: resets the barcode input for the next scan. The dialog stays open for successive scans.
-7. User closes the dialog manually via X button or Escape.
+6. After a successful add/remove/create: resets the barcode input for the next scan. The dialog stays open for successive scans. On operation failure, an inline error message is shown briefly above the controls.
+7. User closes the dialog manually via X button or Escape. The "Ακύρωση" button appears on the new-item form (step 5) to cancel creation and return to the barcode input.
 
 ### Labels (Greek)
 
@@ -64,7 +64,7 @@ New table: `color_rules`
 | Column | Type | Constraints |
 |--------|------|-------------|
 | id | integer | PK, auto-increment |
-| keyword | text | NOT NULL, UNIQUE |
+| keyword | text | NOT NULL, UNIQUE (COLLATE NOCASE) |
 | color | text | NOT NULL — hex string, e.g. `#FF0000` |
 | sortOrder | integer | NOT NULL |
 
@@ -83,7 +83,7 @@ New table: `color_rules`
 **New file: `src/hooks/useColorRules.ts`**
 
 - Fetches all rules on mount, exposes CRUD operations + a `getItemColor(description: string): string | null` function.
-- `getItemColor` iterates rules in sort order, returns the hex color of the first rule whose keyword appears in the description (case-insensitive). Returns `null` if no match.
+- `getItemColor` iterates rules in sort order, returns the hex color of the first rule whose keyword matches in the description using **word-boundary matching** (case-insensitive). This preserves the existing behavior where "PE" matches "PE", "PE-Cy5", "PE/Cy7" but not "SPECIMEN". Implementation: test with regex `new RegExp("\\b" + escapeRegex(keyword) + "\\b", "i")`. Returns `null` if no match.
 
 ### Settings UI
 
@@ -111,9 +111,9 @@ New section in `SettingsPage.tsx`: **"Κανόνες Χρωμάτων"** (placed
 **Replace `getReagentColor()` in `src/components/inventory/columns.tsx`:**
 
 - Remove the hardcoded `getReagentColor()` function.
-- `InventoryTable.tsx` passes color rules to the table via `meta`.
-- `columns.tsx` reads the rules from `table.options.meta` and applies color via inline `style={{ backgroundColor: color, color: textColor }}` where `textColor` is auto-computed based on luminance (white text on dark backgrounds, black text on light backgrounds).
-- Luminance helper: add `contrastText(hex: string): string` to `utils.ts` — returns `"#fff"` or `"#000"` based on relative luminance of the hex color.
+- `StockPage.tsx` calls `useColorRules()` and passes the `getItemColor` function to `InventoryTable.tsx` via props. `InventoryTable.tsx` forwards it to the table via `meta`.
+- `columns.tsx` reads `getItemColor` from `table.options.meta` and applies color via inline `style={{ backgroundColor: color, color: textColor }}` instead of Tailwind classes. `textColor` is auto-computed based on perceived brightness (white text on dark backgrounds, black text on light backgrounds).
+- Brightness helper: add `contrastText(hex: string): string` to `utils.ts` — returns `"#fff"` or `"#000"` based on perceived brightness using `L = 0.299*R + 0.587*G + 0.114*B`; returns white if L < 128, black otherwise.
 
 ### Pre-seeded Rules
 
@@ -147,9 +147,8 @@ In `ReportsPage.tsx`:
 ## Implementation Notes
 
 - No new npm dependencies (removing `html5-qrcode` is a net reduction)
-- `color_rules` table requires a Drizzle schema addition + migration
-- Pre-seeded color rules are inserted during DB init, not via migration data
-- The `BarcodeActionDialog` reuses existing business logic: `getInventoryByBarcode()`, `addInventoryItem()`, `removeQuantity()`, `getNextSortOrder()`
-- The floating button uses a Barcode icon from lucide-react
-- `contrastText()` uses the standard relative luminance formula: `L = 0.299*R + 0.587*G + 0.114*B`; returns white if L < 128, black otherwise
-- Color rules are fetched once per `InventoryTable` render and passed through table meta — no global state needed
+- `color_rules` table: add Drizzle schema to `schema.ts` following existing convention (camelCase field names, snake_case SQL column names — e.g., `sortOrder: integer("sort_order")`). Add `CREATE TABLE IF NOT EXISTS color_rules(...)` to the `MIGRATIONS` array in `db.ts`. Seed the three default rules with `INSERT OR IGNORE` in `initDatabase()`, after the migration loop.
+- The `BarcodeActionDialog` reuses existing business logic: `getInventoryByBarcode()`, `addInventoryItem()`, `removeQuantity()`, `getNextSortOrder()`. It uses `useLocations()` hook internally to resolve location names.
+- The floating button uses a `ScanBarcode` icon from lucide-react
+- Color rules drag-and-drop in Settings reuses the `@dnd-kit/core` and `@dnd-kit/sortable` pattern already established in `InventoryTable.tsx`
+- `contrastText()` uses the perceived brightness formula (ITU-R BT.601): `L = 0.299*R + 0.587*G + 0.114*B`; returns `"#fff"` if L < 128, `"#000"` otherwise

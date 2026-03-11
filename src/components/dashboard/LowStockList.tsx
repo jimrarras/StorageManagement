@@ -28,18 +28,18 @@ export function LowStockList({ items, locationMap, onItemClick }: LowStockListPr
     <Card className="p-4">
       <div className="mb-3 flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <h3 className="font-semibold">Low Stock Items</h3>
+        <h3 className="font-semibold">Είδη σε Χαμηλό Απόθεμα</h3>
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">All items are well-stocked.</p>
+        <p className="text-sm text-muted-foreground">Όλα τα είδη έχουν επαρκές απόθεμα.</p>
       ) : (
         <div className="max-h-64 overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead className="w-20 text-right">Qty</TableHead>
+                <TableHead>Περιγραφή</TableHead>
+                <TableHead>Τοποθεσία</TableHead>
+                <TableHead className="w-20 text-right">Ποσ.</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

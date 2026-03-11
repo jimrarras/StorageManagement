@@ -9,10 +9,10 @@ interface KpiCardsProps {
 }
 
 const kpis = [
-  { key: "totalItems", label: "Unique Items", icon: Package, color: "text-blue-600" },
-  { key: "totalQuantity", label: "Total In Stock", icon: Archive, color: "text-green-600" },
-  { key: "lowStockCount", label: "Low Stock", icon: AlertTriangle, color: "text-amber-600" },
-  { key: "itemsAddedThisMonth", label: "Added This Month", icon: TrendingUp, color: "text-purple-600" },
+  { key: "totalItems", label: "Μοναδικά Είδη", icon: Package, color: "text-blue-600" },
+  { key: "totalQuantity", label: "Σύνολο σε Απόθεμα", icon: Archive, color: "text-green-600" },
+  { key: "lowStockCount", label: "Χαμηλό Απόθεμα", icon: AlertTriangle, color: "text-amber-600" },
+  { key: "itemsAddedThisMonth", label: "Προσθήκες Μήνα", icon: TrendingUp, color: "text-purple-600" },
 ] as const;
 
 export function KpiCards({ totalItems, totalQuantity, lowStockCount, itemsAddedThisMonth }: KpiCardsProps) {

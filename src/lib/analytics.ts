@@ -86,8 +86,8 @@ export async function getItemsAddedInPeriod(
 
 export interface DailyMovement {
   date: string;
-  added: number;
-  removed: number;
+  "προσθήκες": number;
+  "αφαιρέσεις": number;
 }
 
 export async function getStockMovement(
@@ -126,11 +126,11 @@ export async function getStockMovement(
   for (const row of rows) {
     const existing = map.get(row.date) ?? {
       date: row.date,
-      added: 0,
-      removed: 0,
+      "προσθήκες": 0,
+      "αφαιρέσεις": 0,
     };
-    if (row.action === "ADD") existing.added = row.total;
-    if (row.action === "REMOVE") existing.removed = row.total;
+    if (row.action === "ADD") existing["προσθήκες"] = row.total;
+    if (row.action === "REMOVE") existing["αφαιρέσεις"] = row.total;
     map.set(row.date, existing);
   }
 

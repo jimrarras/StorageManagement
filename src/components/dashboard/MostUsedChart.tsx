@@ -16,10 +16,10 @@ export function MostUsedChart({ data }: MostUsedChartProps) {
     <Card className="p-4">
       <div className="mb-3 flex items-center gap-2">
         <TrendingDown className="h-4 w-4 text-purple-600" />
-        <h3 className="font-semibold">Most Used Reagents</h3>
+        <h3 className="font-semibold">Πιο Χρησιμοποιημένα Αντιδραστήρια</h3>
       </div>
       {barData.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No usage data yet.</p>
+        <p className="text-sm text-muted-foreground">Δεν υπάρχουν δεδομένα χρήσης.</p>
       ) : (
         <BarList data={barData} showAnimation className="mt-2" />
       )}

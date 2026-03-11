@@ -14,7 +14,7 @@ export function StockMovementChart({ data, days, onDaysChange }: StockMovementCh
   return (
     <Card className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold">Stock Movement</h3>
+        <h3 className="font-semibold">Κίνηση Αποθέματος</h3>
         <div className="flex gap-1">
           {dayOptions.map((d) => (
             <Button
@@ -23,7 +23,7 @@ export function StockMovementChart({ data, days, onDaysChange }: StockMovementCh
               variant={days === d ? "secondary" : "ghost"}
               onClick={() => onDaysChange(d)}
             >
-              {d}d
+              {d}ημ
             </Button>
           ))}
         </div>
@@ -31,7 +31,7 @@ export function StockMovementChart({ data, days, onDaysChange }: StockMovementCh
       <AreaChart
         data={data}
         index="date"
-        categories={["added", "removed"]}
+        categories={["προσθήκες", "αφαιρέσεις"]}
         colors={["emerald", "rose"]}
         valueFormatter={(v) => String(v)}
         showLegend

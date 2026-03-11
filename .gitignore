@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+dist-ssr
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Visual Studio
+.vs/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# Environment files
+.env
+.env.*

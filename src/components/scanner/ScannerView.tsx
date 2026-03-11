@@ -30,7 +30,7 @@ export function ScannerView({ onScan, active }: ScannerViewProps) {
         },
         () => {}
       )
-      .catch((err) => setError(`Camera error: ${err}`));
+      .catch((err) => setError(`Σφάλμα κάμερας: ${err}`));
 
     return () => {
       scanner.stop().catch(() => {});

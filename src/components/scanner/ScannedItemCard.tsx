@@ -21,16 +21,16 @@ export function ScannedItemCard({ item, onAdd, onRemove }: ScannedItemCardProps)
         <p className="text-lg font-mono">{item.barcode}</p>
       </div>
       <div>
-        <p className="text-sm text-muted-foreground">Description</p>
+        <p className="text-sm text-muted-foreground">Περιγραφή</p>
         <p className="text-lg">{item.description}</p>
       </div>
       <div>
-        <p className="text-sm text-muted-foreground">Current Stock</p>
+        <p className="text-sm text-muted-foreground">Τρέχον Απόθεμα</p>
         <p className="text-3xl font-bold">{item.quantity}</p>
       </div>
       <div className="flex items-end gap-3">
         <div>
-          <Label htmlFor="amount">Amount</Label>
+          <Label htmlFor="amount">Ποσότητα</Label>
           <Input
             id="amount"
             type="number"
@@ -41,10 +41,10 @@ export function ScannedItemCard({ item, onAdd, onRemove }: ScannedItemCardProps)
           />
         </div>
         <Button onClick={() => onAdd(item.barcode, amount)} className="bg-green-600 hover:bg-green-700">
-          <Plus className="mr-1 h-4 w-4" /> Add
+          <Plus className="mr-1 h-4 w-4" /> Προσθήκη
         </Button>
         <Button onClick={() => onRemove(item.barcode, amount)} variant="destructive" disabled={item.quantity === 0}>
-          <Minus className="mr-1 h-4 w-4" /> Remove
+          <Minus className="mr-1 h-4 w-4" /> Αφαίρεση
         </Button>
       </div>
     </div>

@@ -6,7 +6,90 @@ import { Separator } from "@/components/ui/separator";
 import { importInventoryCsv, importReportCsv } from "@/lib/csv-import";
 import { getLowStockThreshold, setLowStockThreshold } from "@/lib/settings";
 import { useLocations } from "@/hooks/useLocations";
-import { Upload, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
+import { Upload, MapPin, Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { useColorRules } from "@/hooks/useColorRules";
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+function SortableRuleRow({
+  rule,
+  isEditing,
+  editKeyword,
+  editColor,
+  onEditKeyword,
+  onEditColor,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onDelete,
+}: {
+  rule: { id: number; keyword: string; color: string; sortOrder: number };
+  isEditing: boolean;
+  editKeyword: string;
+  editColor: string;
+  onEditKeyword: (v: string) => void;
+  onEditColor: (v: string) => void;
+  onStartEdit: () => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rule.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+      <span {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing text-muted-foreground">
+        <GripVertical className="h-4 w-4" />
+      </span>
+      {isEditing ? (
+        <>
+          <Input
+            value={editKeyword}
+            onChange={(e) => onEditKeyword(e.target.value)}
+            className="flex-1"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onSaveEdit();
+              if (e.key === "Escape") onCancelEdit();
+            }}
+            autoFocus
+          />
+          <input
+            type="color"
+            value={editColor}
+            onChange={(e) => onEditColor(e.target.value)}
+            className="h-9 w-9 cursor-pointer rounded border p-0.5"
+          />
+          <Button size="sm" onClick={onSaveEdit}>Αποθήκευση</Button>
+        </>
+      ) : (
+        <>
+          <span className="flex-1 text-sm">{rule.keyword}</span>
+          <span
+            className="h-6 w-6 rounded border"
+            style={{ backgroundColor: rule.color }}
+          />
+          <Button size="icon" variant="ghost" onClick={onStartEdit}>
+            <Pencil className="h-3 w-3" />
+          </Button>
+          <Button size="icon" variant="ghost" onClick={onDelete}>
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function SettingsPage() {
   const [importStatus, setImportStatus] = useState<string | null>(null);
@@ -19,6 +102,14 @@ export function SettingsPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
   const [locationError, setLocationError] = useState<string | null>(null);
+
+  const { rules: colorRules, add: addRule, update: updateRule, remove: removeRule, reorder: reorderRules } = useColorRules();
+  const [newKeyword, setNewKeyword] = useState("");
+  const [newColor, setNewColor] = useState("#3b82f6");
+  const [editingRuleId, setEditingRuleId] = useState<number | null>(null);
+  const [editingRuleKeyword, setEditingRuleKeyword] = useState("");
+  const [editingRuleColor, setEditingRuleColor] = useState("");
+  const [ruleError, setRuleError] = useState<string | null>(null);
 
   useEffect(() => {
     getLowStockThreshold()
@@ -220,6 +311,110 @@ export function SettingsPage() {
 
         {locationError && (
           <p className="text-sm text-red-600">{locationError}</p>
+        )}
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Κανόνες Χρωμάτων</h2>
+        <p className="text-sm text-muted-foreground">
+          Ορίστε χρώματα βάσει λέξεων-κλειδιών στην περιγραφή. Ο πρώτος κανόνας που ταιριάζει εφαρμόζεται.
+        </p>
+
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={(event: DragEndEvent) => {
+            const { active, over } = event;
+            if (!over || active.id === over.id) return;
+            const oldIndex = colorRules.findIndex((r) => r.id === active.id);
+            const newIndex = colorRules.findIndex((r) => r.id === over.id);
+            const reordered = arrayMove(colorRules, oldIndex, newIndex);
+            reorderRules(reordered.map((r, i) => ({ id: r.id, sortOrder: i + 1 })));
+          }}
+        >
+          <SortableContext items={colorRules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {colorRules.map((rule) => (
+                <SortableRuleRow
+                  key={rule.id}
+                  rule={rule}
+                  isEditing={editingRuleId === rule.id}
+                  editKeyword={editingRuleKeyword}
+                  editColor={editingRuleColor}
+                  onEditKeyword={setEditingRuleKeyword}
+                  onEditColor={setEditingRuleColor}
+                  onStartEdit={() => {
+                    setEditingRuleId(rule.id);
+                    setEditingRuleKeyword(rule.keyword);
+                    setEditingRuleColor(rule.color);
+                  }}
+                  onSaveEdit={async () => {
+                    if (!editingRuleKeyword.trim()) return;
+                    setRuleError(null);
+                    try {
+                      await updateRule(rule.id, { keyword: editingRuleKeyword.trim(), color: editingRuleColor });
+                      setEditingRuleId(null);
+                    } catch (err) {
+                      setRuleError(err instanceof Error ? err.message : String(err));
+                    }
+                  }}
+                  onCancelEdit={() => setEditingRuleId(null)}
+                  onDelete={async () => {
+                    setRuleError(null);
+                    try {
+                      await removeRule(rule.id);
+                    } catch (err) {
+                      setRuleError(err instanceof Error ? err.message : String(err));
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        <div className="flex gap-2">
+          <Input
+            placeholder="Λέξη-κλειδί..."
+            value={newKeyword}
+            onChange={(e) => setNewKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (!newKeyword.trim()) return;
+                setRuleError(null);
+                addRule(newKeyword.trim(), newColor)
+                  .then(() => setNewKeyword(""))
+                  .catch((err) => setRuleError(err instanceof Error ? err.message : String(err)));
+              }
+            }}
+            className="flex-1"
+          />
+          <input
+            type="color"
+            value={newColor}
+            onChange={(e) => setNewColor(e.target.value)}
+            className="h-9 w-9 cursor-pointer rounded border p-0.5"
+          />
+          <Button
+            size="sm"
+            onClick={async () => {
+              if (!newKeyword.trim()) return;
+              setRuleError(null);
+              try {
+                await addRule(newKeyword.trim(), newColor);
+                setNewKeyword("");
+              } catch (err) {
+                setRuleError(err instanceof Error ? err.message : String(err));
+              }
+            }}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Προσθήκη
+          </Button>
+        </div>
+
+        {ruleError && (
+          <p className="text-sm text-red-600">{ruleError}</p>
         )}
       </div>
 

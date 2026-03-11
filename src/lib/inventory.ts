@@ -5,6 +5,10 @@ import { inventory, activityLog } from "./schema";
 export type InventoryItem = typeof inventory.$inferSelect;
 export type NewInventoryItem = Omit<typeof inventory.$inferInsert, "id" | "createdAt" | "updatedAt">;
 
+function nowTimestamp(): string {
+  return new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
+}
+
 export async function getAllInventory(): Promise<InventoryItem[]> {
   const db = getDb();
   return db.select().from(inventory).orderBy(inventory.sortOrder);
@@ -26,7 +30,7 @@ export async function addInventoryItem(item: NewInventoryItem): Promise<void> {
       .update(inventory)
       .set({
         quantity: existing.quantity + (item.quantity ?? 0),
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowTimestamp(),
       })
       .where(eq(inventory.barcode, item.barcode));
   } else {
@@ -50,7 +54,7 @@ export async function removeQuantity(barcode: string, amount: number): Promise<v
 
   await db
     .update(inventory)
-    .set({ quantity: newQty, updatedAt: new Date().toISOString() })
+    .set({ quantity: newQty, updatedAt: nowTimestamp() })
     .where(eq(inventory.barcode, barcode));
 
   await db.insert(activityLog).values({
@@ -70,7 +74,7 @@ export async function updateInventoryItem(
 
   await db
     .update(inventory)
-    .set({ ...updates, updatedAt: new Date().toISOString() })
+    .set({ ...updates, updatedAt: nowTimestamp() })
     .where(eq(inventory.id, id));
 
   await db.insert(activityLog).values({

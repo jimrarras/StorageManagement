@@ -1,17 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar, type Page } from "./Sidebar";
+import { SearchBar } from "./SearchBar";
+import { StockPage } from "@/pages/StockPage";
+import { LogPage } from "@/pages/LogPage";
+import { ScanPage } from "@/pages/ScanPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 
 export function AppLayout() {
   const [currentPage, setCurrentPage] = useState<Page>("stock");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Reset search on page change
+  useEffect(() => {
+    setSearchQuery("");
+  }, [currentPage]);
 
   return (
     <div className="flex h-screen">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       <main className="flex-1 overflow-auto p-6">
-        {currentPage === "stock" && <div>Stock Page (TODO)</div>}
-        {currentPage === "log" && <div>Activity Log Page (TODO)</div>}
-        {currentPage === "scan" && <div>Scanner Page (TODO)</div>}
-        {currentPage === "settings" && <div>Settings Page (TODO)</div>}
+        {(currentPage === "stock" || currentPage === "log") && (
+          <div className="mb-4">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={currentPage === "stock" ? "Search barcode or description..." : "Search barcode or date..."}
+            />
+          </div>
+        )}
+        {currentPage === "stock" && <StockPage searchQuery={searchQuery} />}
+        {currentPage === "log" && <LogPage searchQuery={searchQuery} />}
+        {currentPage === "scan" && <ScanPage />}
+        {currentPage === "settings" && <SettingsPage />}
       </main>
     </div>
   );

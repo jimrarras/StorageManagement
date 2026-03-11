@@ -9,6 +9,11 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [react(), tailwindcss()],
 
+  // ExcelJS requires `global` to be defined in the browser context
+  define: {
+    global: "globalThis",
+  },
+
   // Path alias for @/ -> ./src/
   resolve: {
     alias: {

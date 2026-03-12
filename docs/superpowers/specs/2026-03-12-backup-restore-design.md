@@ -69,7 +69,7 @@ Backup configuration stored in the existing `settings` table:
 getBackupFolder() → ensure dir exists → PRAGMA wal_checkpoint(TRUNCATE) → copyFile(storage.db → backup folder) → rotateBackups() → update backup_last_time
 ```
 
-The `PRAGMA wal_checkpoint(TRUNCATE)` flushes the SQLite write-ahead log before copying, ensuring the backup file is self-contained and consistent.
+The WAL checkpoint is executed via `getRawDb().execute("PRAGMA wal_checkpoint(TRUNCATE)")` (imported from `db.ts`). This flushes the SQLite write-ahead log before copying, ensuring the backup file is self-contained and consistent.
 
 ---
 
@@ -88,13 +88,17 @@ The `PRAGMA wal_checkpoint(TRUNCATE)` flushes the SQLite write-ahead log before 
 ### Restore Flow (same for both paths)
 
 ```
-1. Confirm dialog: "Η επαναφορά θα αντικαταστήσει όλα τα τρέχοντα δεδομένα. Συνέχεια;"
-2. Create pre-restore safety backup → storage_prerestore_<timestamp>.db
-3. Close the current database connection (closeDatabase())
-4. copyFile(selected backup → storage.db)
-5. Re-initialize database (initDatabase() — runs migrations, safe with IF NOT EXISTS)
-6. Show success message: "Η επαναφορά ολοκληρώθηκε. Δημιουργήθηκε αντίγραφο ασφαλείας πριν την επαναφορά."
-7. Emit "inventory-changed" event so all open views refresh
+1. Show full-screen loading overlay to block all user interaction during restore
+2. Confirm dialog: "Η επαναφορά θα αντικαταστήσει όλα τα τρέχοντα δεδομένα. Συνέχεια;"
+3. Create pre-restore safety backup → storage_prerestore_<timestamp>.db
+4. Close the current database connection via closeDatabase():
+   - Calls await _sqlite.close() to release the OS file lock
+   - Sets _db and _sqlite to null
+   - This is critical on Windows where SQLite holds an exclusive file lock
+5. copyFile(selected backup → storage.db)
+6. Re-initialize database (initDatabase() — the _db null guard allows re-init)
+7. Full page reload via window.location.reload() to reset all cached state
+   (inventory, locations, color rules, settings — all need re-fetching)
 ```
 
 ### Error Handling
@@ -105,7 +109,7 @@ If step 5 (initDatabase) fails due to a corrupt or incompatible backup file, the
 
 - Use distinct prefix `storage_prerestore_*` for visual distinction
 - Shown in the backup list with muted styling and label "(πριν επαναφορά)"
-- Exempt from rotation — kept indefinitely, user can manually delete
+- Exempt from rotation — kept indefinitely, user can manually delete from the backup list UI
 
 ---
 
@@ -115,7 +119,7 @@ If step 5 (initDatabase) fails due to a corrupt or incompatible backup file, the
 
 ### Two Triggers
 
-1. **On app start** — After `initDatabase()` completes, immediately run `createBackup()`. Guarantees at least one backup per session.
+1. **On app start** — After `initDatabase()` completes, run `createBackup()` only if `backup_last_time` is more than 30 minutes ago (or null). This throttles startup backups so that frequent app restarts don't flood the backup folder and shrink the effective history window.
 
 2. **Interval timer** — `setInterval` at the configured interval (default 4 hours). Resets if the user changes the interval in Settings.
 
@@ -184,7 +188,7 @@ App mounts → initDatabase() → createBackup() → start interval timer
 |------|---------|
 | `src/lib/backup.ts` | Backup, restore, rotation, folder management |
 | `src/hooks/useBackupScheduler.ts` | Auto-backup on mount + interval timer |
-| `src/hooks/useBackupSettings.ts` | Settings state for the backup UI section |
+| `src/hooks/useBackupSettings.ts` | Settings state for backup UI: loads/saves all backup settings with debounce, lists backups, handles delete. Validates interval (minimum 1 hour, integer) and max count (minimum 1). |
 
 ### Modified Files
 
@@ -192,8 +196,8 @@ App mounts → initDatabase() → createBackup() → start interval timer
 |------|--------|
 | `src/App.tsx` | Mount `useBackupScheduler()` |
 | `src/pages/SettingsPage.tsx` | Add "Αντίγραφα Ασφαλείας" section |
-| `src/lib/db.ts` | Export `closeDatabase()` function (sets `_db`/`_sqlite` to null) for restore flow |
-| `src-tauri/capabilities/*.json` | Ensure `fs` plugin has permissions for backup folder |
+| `src/lib/db.ts` | Export `closeDatabase()`: calls `await _sqlite.close()` to release OS file lock, then sets `_db`/`_sqlite` to null so `initDatabase()` can re-init |
+| `src-tauri/capabilities/*.json` | Add required FS permissions: `fs:allow-copy-file`, `fs:allow-read-dir`, `fs:allow-mkdir`, `fs:allow-remove`, `fs:allow-exists`, plus scope for `$APPDATA/backups/**` and user-selected backup folders |
 
 ### No New Dependencies
 

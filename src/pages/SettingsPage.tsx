@@ -420,6 +420,9 @@ export function SettingsPage() {
           Διαχείριση Αποθήκης — Παρακολούθηση αποθέματος για τη Μονάδα Μοριακής Βιολογίας, ΠΓΝΙ Ιωαννίνων.
         </p>
         <p className="text-sm text-muted-foreground">
+          Έκδοση {__APP_VERSION__}
+        </p>
+        <p className="text-sm text-muted-foreground">
           Άδεια χρήσης CC BY-NC-SA 4.0
         </p>
       </div>

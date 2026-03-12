@@ -12,6 +12,7 @@ export default defineConfig(async () => ({
   // ExcelJS requires `global` to be defined in the browser context
   define: {
     global: "globalThis",
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || "0.1.0"),
   },
 
   // Path alias for @/ -> ./src/

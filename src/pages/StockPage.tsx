@@ -41,6 +41,13 @@ export function StockPage({ searchQuery }: StockPageProps) {
     return () => clearTimeout(timer);
   }, [searchQuery, search]);
 
+  // Auto-refresh when barcode dialog modifies inventory
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener("inventory-changed", handler);
+    return () => window.removeEventListener("inventory-changed", handler);
+  }, [refresh]);
+
   const handleAdd = async (data: { barcode: string; description: string; quantity: number }) => {
     try {
       await addItem(data.barcode, data.description, data.quantity);

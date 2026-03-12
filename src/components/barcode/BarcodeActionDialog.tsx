@@ -109,6 +109,7 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
         sortOrder,
       });
       setFeedback(`+${amount}`);
+      window.dispatchEvent(new Event("inventory-changed"));
       // Refresh the item to get updated quantity
       const updated = await getInventoryByBarcode(item.barcode);
       const refreshed = updated.find((i) => i.locationId === item.locationId);
@@ -124,6 +125,7 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
       setError(null);
       await removeQuantity(item.barcode, amount, item.locationId);
       setFeedback(`-${amount}`);
+      window.dispatchEvent(new Event("inventory-changed"));
       const updated = await getInventoryByBarcode(item.barcode);
       const refreshed = updated.find((i) => i.locationId === item.locationId);
       if (refreshed) setState({ step: "found", item: refreshed });
@@ -147,6 +149,7 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
         sortOrder,
       });
       setFeedback("Δημιουργήθηκε!");
+      window.dispatchEvent(new Event("inventory-changed"));
       setTimeout(() => {
         resetToInput();
       }, 1000);
@@ -205,11 +208,11 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
               <p className="text-sm text-muted-foreground">Τρέχον Απόθεμα</p>
               <p className="text-3xl font-bold">
                 {state.item.quantity}
-                {feedback && (
-                  <span className={`ml-2 text-lg ${feedback.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
-                    {feedback}
-                  </span>
-                )}
+                <span
+                  className={`ml-2 text-lg transition-opacity duration-300 ${feedback ? "opacity-100" : "opacity-0"} ${feedback?.startsWith("+") ? "text-green-600" : "text-red-600"}`}
+                >
+                  {feedback ?? ""}
+                </span>
               </p>
             </div>
             <div className="flex items-end gap-3">

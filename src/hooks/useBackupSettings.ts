@@ -117,8 +117,8 @@ export function useBackupSettings() {
     // Page will reload, so no state update needed
   }, []);
 
-  // Restore from external file
-  const restoreExternal = useCallback(async () => {
+  // Restore from external file — returns true if restore started, false if user cancelled
+  const restoreExternal = useCallback(async (): Promise<boolean> => {
     return await restoreFromFile();
     // Page will reload if successful
   }, []);

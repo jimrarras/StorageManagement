@@ -164,13 +164,13 @@ export function SettingsPage() {
   };
 
   const handleRestoreExternal = async () => {
-    const confirmed = window.confirm(
-      "Η επαναφορά θα αντικαταστήσει όλα τα τρέχοντα δεδομένα. Συνέχεια;"
-    );
-    if (!confirmed) return;
     setRestoring(true);
     try {
-      await restoreExternal();
+      const didRestore = await restoreExternal();
+      if (!didRestore) {
+        setRestoring(false);
+      }
+      // If didRestore is true, page will reload
     } catch (err) {
       setRestoring(false);
       setBackupStatus(`Αποτυχία επαναφοράς: ${err instanceof Error ? err.message : String(err)}`);

@@ -51,7 +51,13 @@ function parseDateFromFilename(filename: string): Date | null {
   const parts = match[1].split("T");
   const datePart = parts[0];
   const timePart = parts[1].replace(/-/g, ":");
-  return new Date(`${datePart}T${timePart}`);
+  return new Date(`${datePart}T${timePart}Z`);
+}
+
+function validateFilename(filename: string): void {
+  if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    throw new Error("Invalid filename");
+  }
 }
 
 // ── Backup Operations ──
@@ -154,6 +160,7 @@ async function rotateBackups(): Promise<void> {
 }
 
 export async function deleteBackup(filename: string): Promise<void> {
+  validateFilename(filename);
   const folder = await getBackupFolder();
   const path = await join(folder, filename);
   await remove(path);
@@ -162,6 +169,7 @@ export async function deleteBackup(filename: string): Promise<void> {
 // ── Restore Operations ──
 
 export async function restoreFromBackup(filename: string): Promise<void> {
+  validateFilename(filename);
   const folder = await getBackupFolder();
   const backupPath = await join(folder, filename);
   await performRestore(backupPath);
@@ -176,6 +184,11 @@ export async function restoreFromFile(): Promise<boolean> {
 
   if (!selected) return false;
 
+  const confirmed = window.confirm(
+    "Η επαναφορά θα αντικαταστήσει όλα τα τρέχοντα δεδομένα. Συνέχεια;"
+  );
+  if (!confirmed) return false;
+
   await performRestore(selected);
   return true;
 }
@@ -183,9 +196,14 @@ export async function restoreFromFile(): Promise<boolean> {
 async function performRestore(sourcePath: string): Promise<void> {
   await createPreRestoreBackup();
 
+  // Cache all paths and backup list BEFORE closing DB (getSetting needs DB)
+  const dbPath = await getDbPath();
+  const folder = await getBackupFolder();
+  const allBackups = await listBackups();
+  const latestPreRestore = allBackups.find((b) => b.isPreRestore);
+
   await closeDatabase();
 
-  const dbPath = await getDbPath();
   try {
     await copyFile(sourcePath, dbPath);
   } catch (err) {
@@ -195,16 +213,30 @@ async function performRestore(sourcePath: string): Promise<void> {
 
   try {
     await initDatabase();
-  } catch (err) {
-    await closeDatabase();
-    const folder = await getBackupFolder();
-    const allBackups = await listBackups();
-    const latestPreRestore = allBackups.find((b) => b.isPreRestore);
+  } catch {
+    // Restored file is corrupt — roll back to pre-restore backup
+    try {
+      await closeDatabase();
+    } catch {
+      // Already closed or partially initialized — continue with rollback
+    }
+
     if (latestPreRestore) {
       const preRestorePath = await join(folder, latestPreRestore.filename);
       await copyFile(preRestorePath, dbPath);
-      await initDatabase();
+      try {
+        await initDatabase();
+      } catch {
+        // Rollback DB init also failed — force reload as last resort
+        window.location.reload();
+        return;
+      }
+    } else {
+      // No pre-restore backup available — force reload as last resort
+      window.location.reload();
+      return;
     }
+
     throw new Error(`Το αρχείο αντιγράφου ασφαλείας είναι κατεστραμμένο. Η βάση επαναφέρθηκε στην προηγούμενη κατάσταση.`);
   }
 

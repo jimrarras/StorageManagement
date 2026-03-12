@@ -7,8 +7,10 @@ import { LogPage } from "@/pages/LogPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ReportsPage } from "@/pages/ReportsPage";
 import { BarcodeActionButton } from "@/components/barcode/BarcodeActionButton";
+import { useBackupScheduler } from "@/hooks/useBackupScheduler";
 
 export function AppLayout() {
+  useBackupScheduler();
   const [currentPage, setCurrentPage] = useState<Page>("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
 

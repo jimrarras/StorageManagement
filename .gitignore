@@ -43,3 +43,6 @@ src-tauri/gen/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Superpowers brainstorm mockups
+.superpowers/

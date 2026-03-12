@@ -16,7 +16,7 @@ function createDrizzle(sqlite: Database) {
         sql,
         params as unknown[]
       );
-      return { rows };
+      return { rows: rows.map((row) => Object.values(row)) };
     },
     { schema }
   );

@@ -42,6 +42,15 @@
     {
       "identifier": "fs:allow-exists",
       "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        { "path": "$DESKTOP/**" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$DOWNLOAD/**" },
+        { "path": "$HOME/**" }
+      ]
     }
   ]
 }

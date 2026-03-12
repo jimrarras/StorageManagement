@@ -90,20 +90,21 @@ git commit -m "feat(backup): add closeDatabase() for restore flow"
 
 ## Chunk 2: Backup Core Logic
 
-### Task 3: Create backup.ts — Backup & Folder Operations
+### Task 3: Create backup.ts — Complete Backup Module
 
 **Files:**
 - Create: `src/lib/backup.ts`
 
-This module handles all backup operations. It uses Tauri FS plugin for file operations and the existing `settings` module for persistence.
+This module handles all backup operations: create, list, rotate, delete, and restore. It uses Tauri FS plugin for file operations, Tauri Dialog plugin for the file picker, and the existing `settings` module for persistence. Created as a single file to ensure all functions compile together (e.g., `createBackup` calls `rotateBackups`, `performRestore` calls `listBackups`).
 
-- [ ] **Step 1: Create the backup module with helper functions and createBackup**
+- [ ] **Step 1: Create the complete backup module**
 
 Create `src/lib/backup.ts`:
 
 ```typescript
 import { copyFile, mkdir, readDir, remove, exists } from "@tauri-apps/plugin-fs";
 import { appDataDir, join } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/plugin-dialog";
 import { getRawDb, closeDatabase, initDatabase } from "./db";
 import { getSetting, setSetting } from "./settings";
 
@@ -187,7 +188,7 @@ export async function createBackup(): Promise<string> {
   return backupPath;
 }
 
-export async function createPreRestoreBackup(): Promise<string> {
+async function createPreRestoreBackup(): Promise<string> {
   const folder = await ensureBackupFolder();
   const dbPath = await getDbPath();
 
@@ -206,34 +207,7 @@ export async function createPreRestoreBackup(): Promise<string> {
   await copyFile(dbPath, backupPath);
   return backupPath;
 }
-```
 
-- [ ] **Step 2: Verify TypeScript compiles**
-
-Run: `pnpm build`
-Expected: No errors. All imports (`@tauri-apps/plugin-fs`, `@tauri-apps/api/path`, `@tauri-apps/plugin-dialog`) are already installed as dependencies.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add src/lib/backup.ts
-git commit -m "feat(backup): add backup module with createBackup and path helpers"
-```
-
----
-
-### Task 4: Add listBackups, rotateBackups, and Restore Functions
-
-**Files:**
-- Modify: `src/lib/backup.ts`
-
-Add the remaining backup operations: listing, rotation, and restore.
-
-- [ ] **Step 1: Add listBackups and rotateBackups**
-
-Append to `src/lib/backup.ts`, before the closing of the file (after `createPreRestoreBackup`):
-
-```typescript
 // ── List & Rotate ──
 
 export async function listBackups(): Promise<BackupEntry[]> {
@@ -295,19 +269,7 @@ export async function deleteBackup(filename: string): Promise<void> {
   const path = await join(folder, filename);
   await remove(path);
 }
-```
 
-- [ ] **Step 2: Add restore functions**
-
-First, add the missing import at the top of `src/lib/backup.ts`:
-
-```typescript
-import { open } from "@tauri-apps/plugin-dialog";
-```
-
-Then continue appending to the end of `src/lib/backup.ts`:
-
-```typescript
 // ── Restore Operations ──
 
 export async function restoreFromBackup(filename: string): Promise<void> {
@@ -369,28 +331,28 @@ async function performRestore(sourcePath: string): Promise<void> {
 }
 ```
 
-- [ ] **Step 3: Verify TypeScript compiles**
+- [ ] **Step 2: Verify TypeScript compiles**
 
 Run: `pnpm build`
-Expected: No errors.
+Expected: No errors. All imports (`@tauri-apps/plugin-fs`, `@tauri-apps/api/path`, `@tauri-apps/plugin-dialog`) are already installed as dependencies in `package.json`.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/lib/backup.ts
-git commit -m "feat(backup): add list, rotate, delete, and restore operations"
+git commit -m "feat(backup): add complete backup module with create, list, rotate, and restore"
 ```
 
 ---
 
 ## Chunk 3: React Hooks
 
-### Task 5: Create useBackupScheduler Hook
+### Task 4: Create useBackupScheduler Hook
 
 **Files:**
 - Create: `src/hooks/useBackupScheduler.ts`
 
-This hook runs in `App.tsx` and silently triggers automatic backups on app start (throttled to 30min) and on a configurable interval.
+This hook runs in `AppLayout` and silently triggers automatic backups on app start (throttled to 30min) and on a configurable interval.
 
 - [ ] **Step 1: Create the scheduler hook**
 
@@ -461,7 +423,7 @@ git commit -m "feat(backup): add useBackupScheduler hook for auto-backup"
 
 ---
 
-### Task 6: Create useBackupSettings Hook
+### Task 5: Create useBackupSettings Hook
 
 **Files:**
 - Create: `src/hooks/useBackupSettings.ts`
@@ -635,7 +597,7 @@ git commit -m "feat(backup): add useBackupSettings hook for backup UI state"
 
 ## Chunk 4: UI & App Integration
 
-### Task 7: Add Backup Section to SettingsPage
+### Task 6: Add Backup Section to SettingsPage
 
 **Files:**
 - Modify: `src/pages/SettingsPage.tsx`
@@ -914,7 +876,7 @@ git commit -m "feat(backup): add backup/restore UI section in Settings page"
 
 ---
 
-### Task 8: Wire useBackupScheduler into App.tsx
+### Task 7: Wire useBackupScheduler into AppLayout
 
 **Files:**
 - Modify: `src/components/layout/AppLayout.tsx`

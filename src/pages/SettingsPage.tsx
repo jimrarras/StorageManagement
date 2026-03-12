@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { importInventoryCsv, importReportCsv } from "@/lib/csv-import";
 import { getLowStockThreshold, setLowStockThreshold } from "@/lib/settings";
 import { useLocations } from "@/hooks/useLocations";
-import { Upload, MapPin, Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Upload, MapPin, Plus, Pencil, Trash2, GripVertical, FolderOpen, Download, RotateCcw, HardDrive } from "lucide-react";
 import { useColorRules } from "@/hooks/useColorRules";
 import { ColorPicker } from "@/components/ui/color-picker";
 import {
@@ -21,6 +21,9 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useBackupSettings } from "@/hooks/useBackupSettings";
+import { open } from "@tauri-apps/plugin-dialog";
+import { Switch } from "@/components/ui/switch";
 
 function SortableRuleRow({
   rule,
@@ -107,6 +110,73 @@ export function SettingsPage() {
   const [editingRuleColor, setEditingRuleColor] = useState("");
   const [ruleError, setRuleError] = useState<string | null>(null);
 
+  const {
+    enabled: backupEnabled,
+    setEnabled: setBackupEnabled,
+    folder: backupFolder,
+    updateFolder: updateBackupFolder,
+    intervalHours,
+    setIntervalHours,
+    maxCount: backupMaxCount,
+    setMaxCount: setBackupMaxCount,
+    lastTime: backupLastTime,
+    backups,
+    loading: backupsLoading,
+    triggerBackup,
+    removeBackup,
+    restore: restoreBackup,
+    restoreExternal,
+  } = useBackupSettings();
+
+  const [backupStatus, setBackupStatus] = useState<string | null>(null);
+  const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
+
+  const handleManualBackup = async () => {
+    setBackupStatus(null);
+    try {
+      await triggerBackup();
+      setBackupStatus("Το αντίγραφο ασφαλείας δημιουργήθηκε επιτυχώς.");
+    } catch (err) {
+      setBackupStatus(`Αποτυχία: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
+  const handlePickFolder = async () => {
+    const selected = await open({ directory: true, multiple: false });
+    if (selected) {
+      await updateBackupFolder(selected);
+    }
+  };
+
+  const handleRestore = async (filename: string) => {
+    const confirmed = window.confirm(
+      "Η επαναφορά θα αντικαταστήσει όλα τα τρέχοντα δεδομένα. Συνέχεια;"
+    );
+    if (!confirmed) return;
+    setRestoring(true);
+    try {
+      await restoreBackup(filename);
+    } catch (err) {
+      setRestoring(false);
+      setBackupStatus(`Αποτυχία επαναφοράς: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
+  const handleRestoreExternal = async () => {
+    const confirmed = window.confirm(
+      "Η επαναφορά θα αντικαταστήσει όλα τα τρέχοντα δεδομένα. Συνέχεια;"
+    );
+    if (!confirmed) return;
+    setRestoring(true);
+    try {
+      await restoreExternal();
+    } catch (err) {
+      setRestoring(false);
+      setBackupStatus(`Αποτυχία επαναφοράς: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
   useEffect(() => {
     getLowStockThreshold()
       .then((val) => {
@@ -184,6 +254,12 @@ export function SettingsPage() {
   };
 
   return (
+    <>
+    {restoring && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80">
+        <p className="text-lg font-semibold">Επαναφορά βάσης δεδομένων...</p>
+      </div>
+    )}
     <div className="space-y-6 max-w-lg">
       <h1 className="text-2xl font-bold">Ρυθμίσεις</h1>
 
@@ -228,6 +304,143 @@ export function SettingsPage() {
             className="w-24"
           />
           {thresholdSaved && <p className="text-sm text-green-600">Αποθηκεύτηκε.</p>}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Αντίγραφα Ασφαλείας</h2>
+        <p className="text-sm text-muted-foreground">
+          Αυτόματα αντίγραφα ασφαλείας της βάσης δεδομένων.
+        </p>
+
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={backupEnabled}
+            onCheckedChange={setBackupEnabled}
+            id="backup-enabled"
+          />
+          <Label htmlFor="backup-enabled">Ενεργοποίηση αυτόματων αντιγράφων</Label>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Φάκελος</Label>
+          <div className="flex gap-2">
+            <Input
+              value={backupFolder}
+              readOnly
+              className="flex-1 text-xs"
+            />
+            <Button variant="outline" size="sm" onClick={handlePickFolder}>
+              <FolderOpen className="mr-1 h-4 w-4" /> Αλλαγή...
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="backup-interval">Συχνότητα (ώρες)</Label>
+            <Input
+              id="backup-interval"
+              type="number"
+              min={1}
+              value={intervalHours}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (Number.isFinite(n) && n >= 1) setIntervalHours(n);
+              }}
+              className="w-20"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="backup-max">Μέγιστα αντίγραφα</Label>
+            <Input
+              id="backup-max"
+              type="number"
+              min={1}
+              value={backupMaxCount}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (Number.isFinite(n) && n >= 1) setBackupMaxCount(n);
+              }}
+              className="w-20"
+            />
+          </div>
+        </div>
+
+        {backupLastTime && (
+          <p className="text-sm text-muted-foreground">
+            Τελευταίο αντίγραφο: {new Date(backupLastTime).toLocaleString("el-GR")}
+          </p>
+        )}
+
+        <Button variant="outline" onClick={handleManualBackup}>
+          <HardDrive className="mr-1 h-4 w-4" /> Δημιουργία αντιγράφου τώρα
+        </Button>
+
+        {backupStatus && (
+          <p className={`text-sm ${backupStatus.startsWith("Αποτυχία") ? "text-red-600" : "text-green-600"}`}>
+            {backupStatus}
+          </p>
+        )}
+
+        <Separator />
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">Επαναφορά</h3>
+          <p className="text-sm text-muted-foreground">Επιλέξτε αντίγραφο για επαναφορά:</p>
+
+          {backupsLoading ? (
+            <p className="text-sm text-muted-foreground">Φόρτωση...</p>
+          ) : backups.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Δεν υπάρχουν αντίγραφα ασφαλείας.</p>
+          ) : (
+            <div className="max-h-48 overflow-y-auto space-y-1 border rounded-md p-2">
+              {backups.map((backup) => (
+                <div
+                  key={backup.filename}
+                  className={`flex items-center gap-2 text-sm px-2 py-1 rounded cursor-pointer ${
+                    selectedBackup === backup.filename
+                      ? "bg-accent"
+                      : "hover:bg-accent/50"
+                  } ${backup.isPreRestore ? "text-muted-foreground" : ""}`}
+                  onClick={() => setSelectedBackup(backup.filename)}
+                >
+                  <Download className="h-3 w-3 shrink-0" />
+                  <span className="flex-1 truncate">
+                    {backup.isPreRestore && "(πριν επαναφορά) "}
+                    {backup.date.toLocaleString("el-GR")}
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeBackup(backup.filename);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!selectedBackup || restoring}
+              onClick={() => selectedBackup && handleRestore(selectedBackup)}
+            >
+              <RotateCcw className="mr-1 h-4 w-4" /> Επαναφορά επιλεγμένου
+            </Button>
+            <Button variant="outline" size="sm" disabled={restoring} onClick={handleRestoreExternal}>
+              <FolderOpen className="mr-1 h-4 w-4" /> Επαναφορά από αρχείο...
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -427,5 +640,6 @@ export function SettingsPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

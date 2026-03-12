@@ -755,7 +755,7 @@ First, add the loading overlay at the very top of the return, before `<div class
       )}
 ```
 
-Then replace the `<Separator />` between Dashboard Settings and Locations with:
+Then replace the `<Separator />` between Dashboard Settings and Locations with the following block. It starts with a separator (between Dashboard and Backup) and ends with a separator (between Backup and Locations):
 
 ```tsx
       <Separator />
@@ -894,7 +894,11 @@ Then replace the `<Separator />` between Dashboard Settings and Locations with:
           </div>
         </div>
       </div>
+
+      <Separator />
 ```
+
+The block above replaces the single existing `<Separator />` at line 234. The first `<Separator />` separates Dashboard Settings from Backup. The final `<Separator />` separates Backup from Locations (which follows immediately in the existing code).
 
 - [ ] **Step 4: Verify TypeScript compiles**
 

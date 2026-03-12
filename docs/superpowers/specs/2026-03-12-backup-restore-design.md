@@ -115,7 +115,7 @@ If step 6 (initDatabase) fails due to a corrupt or incompatible backup file, the
 
 ## Scheduling
 
-**Hook:** `src/hooks/useBackupScheduler.ts` — runs in `App.tsx`
+**Hook:** `src/hooks/useBackupScheduler.ts` — runs in `AppLayout` (mounted after DB is initialized)
 
 ### Two Triggers
 
@@ -194,7 +194,7 @@ App mounts → initDatabase() → createBackup() → start interval timer
 
 | File | Change |
 |------|--------|
-| `src/App.tsx` | Mount `useBackupScheduler()` |
+| `src/components/layout/AppLayout.tsx` | Mount `useBackupScheduler()` (after DB init is guaranteed) |
 | `src/pages/SettingsPage.tsx` | Add "Αντίγραφα Ασφαλείας" section |
 | `src/lib/db.ts` | Export `closeDatabase()`: calls `await _sqlite.close()` to release OS file lock, then sets `_db`/`_sqlite` to null so `initDatabase()` can re-init |
 | `src-tauri/capabilities/*.json` | Add required FS permissions: `fs:allow-copy-file`, `fs:allow-read-dir`, `fs:allow-mkdir`, `fs:allow-remove`, `fs:allow-exists`, plus scope for `$APPDATA/backups/**` and user-selected backup folders |

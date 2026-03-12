@@ -6,6 +6,7 @@ import { StockPage } from "@/pages/StockPage";
 import { LogPage } from "@/pages/LogPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ReportsPage } from "@/pages/ReportsPage";
+import { BarcodeActionButton } from "@/components/barcode/BarcodeActionButton";
 
 export function AppLayout() {
   const [currentPage, setCurrentPage] = useState<Page>("dashboard");
@@ -35,6 +36,7 @@ export function AppLayout() {
         {currentPage === "reports" && <ReportsPage />}
         {currentPage === "settings" && <SettingsPage />}
       </main>
+      <BarcodeActionButton />
     </div>
   );
 }

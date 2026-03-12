@@ -20,7 +20,7 @@ export function LogPage({ searchQuery }: LogPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  if (loading) return <div>Φόρτωση...</div>;
+  if (loading) return <div className="flex items-center gap-2 text-muted-foreground"><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Φόρτωση...</div>;
 
   return (
     <div className="space-y-4">

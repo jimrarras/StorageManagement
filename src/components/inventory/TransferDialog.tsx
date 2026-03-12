@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -82,6 +83,7 @@ export function TransferDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Μεταφορά Είδους</DialogTitle>
+          <DialogDescription>Μεταφέρετε ποσότητα σε άλλη τοποθεσία.</DialogDescription>
         </DialogHeader>
         {item && (
           <div className="space-y-4">

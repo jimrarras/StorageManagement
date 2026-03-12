@@ -26,6 +26,9 @@ export function BarcodeActionButton() {
         title="Γρήγορη Σάρωση (F2)"
       >
         <ScanBarcode className="h-6 w-6" />
+        <kbd className="absolute -top-1 -right-1 flex h-5 items-center rounded border bg-background px-1 text-[10px] font-medium text-muted-foreground shadow-sm">
+          F2
+        </kbd>
       </Button>
       <BarcodeActionDialog open={open} onClose={() => setOpen(false)} />
     </>

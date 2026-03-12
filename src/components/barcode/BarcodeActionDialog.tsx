@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Search } from "lucide-react";
 import {
   getInventoryByBarcode,
   addInventoryItem,
@@ -162,6 +163,7 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Γρήγορη Σάρωση</DialogTitle>
+          <DialogDescription>Σαρώστε ή πληκτρολογήστε barcode για γρήγορη προσθήκη/αφαίρεση αποθέματος.</DialogDescription>
         </DialogHeader>
 
         {/* Barcode input — always visible */}
@@ -173,13 +175,18 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
             }}
             className="space-y-3"
           >
-            <Input
-              ref={inputRef}
-              placeholder="Σαρώστε ή πληκτρολογήστε barcode..."
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              autoFocus
-            />
+            <div className="flex gap-2">
+              <Input
+                ref={inputRef}
+                placeholder="Σαρώστε ή πληκτρολογήστε barcode..."
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                autoFocus
+              />
+              <Button type="submit" size="sm" disabled={!barcode.trim()}>
+                <Search className="mr-1 h-4 w-4" /> Αναζήτηση
+              </Button>
+            </div>
           </form>
         )}
 
@@ -216,7 +223,7 @@ export function BarcodeActionDialog({ open, onClose }: BarcodeActionDialogProps)
                   className="w-24"
                 />
               </div>
-              <Button onClick={() => handleAdd(state.item)} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={() => handleAdd(state.item)}>
                 <Plus className="mr-1 h-4 w-4" /> Προσθήκη
               </Button>
               <Button onClick={() => handleRemove(state.item)} variant="destructive" disabled={state.item.quantity === 0}>

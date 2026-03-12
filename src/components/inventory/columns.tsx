@@ -9,7 +9,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
     header: "",
     size: 40,
     cell: () => (
-      <span className="cursor-grab active:cursor-grabbing text-muted-foreground">
+      <span className="cursor-grab active:cursor-grabbing text-muted-foreground" aria-label="Σύρετε για αναδιάταξη">
         <GripVertical className="h-4 w-4" />
       </span>
     ),

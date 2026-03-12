@@ -38,16 +38,19 @@ interface InventoryTableProps {
   onReorder: (updates: { id: number; sortOrder: number }[]) => void;
   locationMap?: Map<number, string>;
   getItemColor?: (description: string) => string | null;
+  selectedId?: number | null;
 }
 
 function SortableRow({
   row,
   onRowClick,
   onRowDoubleClick,
+  isSelected,
 }: {
   row: Row<InventoryItem>;
   onRowClick: (item: InventoryItem) => void;
   onRowDoubleClick: (item: InventoryItem) => void;
+  isSelected?: boolean;
 }) {
   const {
     attributes,
@@ -70,7 +73,7 @@ function SortableRow({
     <TableRow
       ref={setNodeRef}
       style={style}
-      className="cursor-pointer"
+      className={`cursor-pointer ${isSelected ? "bg-muted" : ""}`}
       onClick={() => onRowClick(row.original)}
       onDoubleClick={() => onRowDoubleClick(row.original)}
     >
@@ -95,6 +98,7 @@ export function InventoryTable({
   onReorder,
   locationMap,
   getItemColor,
+  selectedId,
 }: InventoryTableProps) {
   const meta = useMemo(() => ({ locationMap, getItemColor }), [locationMap, getItemColor]);
 
@@ -143,7 +147,7 @@ export function InventoryTable({
               rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${selectedId === row.original.id ? "bg-muted" : ""}`}
                   onClick={() => onRowClick(row.original)}
                   onDoubleClick={() => onRowDoubleClick(row.original)}
                 >
@@ -165,6 +169,7 @@ export function InventoryTable({
                     row={row}
                     onRowClick={onRowClick}
                     onRowDoubleClick={onRowDoubleClick}
+                    isSelected={selectedId === row.original.id}
                   />
                 ))}
               </SortableContext>

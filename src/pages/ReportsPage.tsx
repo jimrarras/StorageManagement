@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -104,6 +105,7 @@ export function ReportsPage() {
     error,
   } = useReport();
 
+  const [exportError, setExportError] = useState<string | null>(null);
   const hasRows = data !== null && data.rows.length > 0;
 
   return (
@@ -123,9 +125,10 @@ export function ReportsPage() {
             disabled={loading || !hasRows}
             onClick={async () => {
               try {
+                setExportError(null);
                 await handleExport(data);
               } catch (err) {
-                alert(`Αποτυχία εξαγωγής: ${err}`);
+                setExportError(`Αποτυχία εξαγωγής: ${err instanceof Error ? err.message : String(err)}`);
               }
             }}
           >
@@ -152,15 +155,15 @@ export function ReportsPage() {
         </TabsList>
 
         {/* Error */}
-        {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+        {(error || exportError) && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+            {error || exportError}
           </div>
         )}
 
         {/* Loading */}
         {loading && (
-          <p className="text-sm text-muted-foreground">Φόρτωση αναφοράς...</p>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground"><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Φόρτωση αναφοράς...</p>
         )}
 
         {/* Tab content */}

@@ -8,6 +8,7 @@ import { getLowStockThreshold, setLowStockThreshold } from "@/lib/settings";
 import { useLocations } from "@/hooks/useLocations";
 import { Upload, MapPin, Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import { useColorRules } from "@/hooks/useColorRules";
+import { ColorPicker } from "@/components/ui/color-picker";
 import {
   DndContext,
   closestCenter,
@@ -49,7 +50,7 @@ function SortableRuleRow({
 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center gap-2">
-      <span {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing text-muted-foreground">
+      <span {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing text-muted-foreground" aria-label="Σύρετε για αναδιάταξη">
         <GripVertical className="h-4 w-4" />
       </span>
       {isEditing ? (
@@ -64,12 +65,7 @@ function SortableRuleRow({
             }}
             autoFocus
           />
-          <input
-            type="color"
-            value={editColor}
-            onChange={(e) => onEditColor(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded border p-0.5"
-          />
+          <ColorPicker value={editColor} onChange={onEditColor} />
           <Button size="sm" onClick={onSaveEdit}>Αποθήκευση</Button>
         </>
       ) : (
@@ -335,6 +331,9 @@ export function SettingsPage() {
         >
           <SortableContext items={colorRules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
+              {colorRules.length === 0 && (
+                <p className="text-sm text-muted-foreground py-2">Δεν υπάρχουν κανόνες. Προσθέστε έναν κανόνα παρακάτω.</p>
+              )}
               {colorRules.map((rule) => (
                 <SortableRuleRow
                   key={rule.id}
@@ -390,12 +389,7 @@ export function SettingsPage() {
             }}
             className="flex-1"
           />
-          <input
-            type="color"
-            value={newColor}
-            onChange={(e) => setNewColor(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded border p-0.5"
-          />
+          <ColorPicker value={newColor} onChange={setNewColor} />
           <Button
             size="sm"
             onClick={async () => {

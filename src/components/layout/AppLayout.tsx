@@ -20,7 +20,7 @@ export function AppLayout() {
   return (
     <div className="flex h-screen">
       <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-6 pb-24">
         {(currentPage === "stock" || currentPage === "log") && (
           <div className="mb-4">
             <SearchBar

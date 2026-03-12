@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 
 interface EditableCellProps {
@@ -12,7 +12,7 @@ interface EditableCellProps {
   viewContent?: ReactNode;
 }
 
-export function EditableCell({
+export const EditableCell = memo(function EditableCell({
   value,
   field,
   type,
@@ -45,4 +45,4 @@ export function EditableCell({
       autoFocus={field === "barcode"}
     />
   );
-}
+});

@@ -73,7 +73,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
     }
   }, [editItem]);
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = useCallback(async () => {
     const ids = Array.from(checkedIds);
     const failedIds = new Set<number>();
     const errors: string[] = [];
@@ -91,7 +91,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
     if (errors.length > 0) {
       setErrorMsg(`Αποτυχία διαγραφής ${errors.length} ειδών.`);
     }
-  };
+  }, [checkedIds, refresh]);
 
   if (loading) return <div className="flex items-center gap-2 text-muted-foreground"><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Φόρτωση...</div>;
 
@@ -113,7 +113,7 @@ export function StockPage({ searchQuery }: StockPageProps) {
               <ArrowRightLeft className="mr-1 h-4 w-4" /> Μεταφορά
             </Button>
           )}
-          <Button size="sm" variant="outline" onClick={() => exportInventoryXlsx(items, locationMap)}>
+          <Button size="sm" variant="outline" onClick={async () => { try { await exportInventoryXlsx(items, locationMap); } catch (err) { setErrorMsg(`Αποτυχία εξαγωγής: ${err instanceof Error ? err.message : String(err)}`); } }}>
             <FileSpreadsheet className="mr-1 h-4 w-4" /> Εξαγωγή XLSX
           </Button>
         </div>

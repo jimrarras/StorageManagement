@@ -215,7 +215,7 @@ export function InventoryTable({
     meta,
   });
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -229,9 +229,9 @@ export function InventoryTable({
     }));
 
     onReorder(updates);
-  };
+  }, [data, onReorder]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (editingId === null) return;
     if (e.key === "Enter") {
       e.preventDefault();
@@ -240,7 +240,7 @@ export function InventoryTable({
       e.preventDefault();
       onCancelEdit();
     }
-  };
+  }, [editingId, onSaveEdit, onCancelEdit]);
 
   const rows = table.getRowModel().rows;
 

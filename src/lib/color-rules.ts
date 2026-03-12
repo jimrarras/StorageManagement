@@ -1,19 +1,12 @@
 import { eq } from "drizzle-orm";
-import { getDb, getRawDb } from "./db";
+import { getDb } from "./db";
 import { colorRules } from "./schema";
 
 export type ColorRule = typeof colorRules.$inferSelect;
 
 export async function getAllColorRules(): Promise<ColorRule[]> {
-  const raw = await getRawDb().select<
-    { id: number; keyword: string; color: string; sort_order: number }[]
-  >("SELECT id, keyword, color, sort_order FROM color_rules ORDER BY sort_order", []);
-  return raw.map((r) => ({
-    id: r.id,
-    keyword: r.keyword,
-    color: r.color,
-    sortOrder: r.sort_order,
-  }));
+  const db = getDb();
+  return db.select().from(colorRules).orderBy(colorRules.sortOrder);
 }
 
 export async function addColorRule(keyword: string, color: string): Promise<void> {
@@ -40,15 +33,7 @@ export async function reorderColorRules(
   updates: { id: number; sortOrder: number }[]
 ): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    for (const { id, sortOrder } of updates) {
-      await db.update(colorRules).set({ sortOrder }).where(eq(colorRules.id, id));
-    }
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    await sqlite.execute("ROLLBACK");
-    throw e;
+  for (const { id, sortOrder } of updates) {
+    await db.update(colorRules).set({ sortOrder }).where(eq(colorRules.id, id));
   }
 }

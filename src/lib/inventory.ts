@@ -1,5 +1,5 @@
 import { eq, or, and, desc, sql } from "drizzle-orm";
-import { getDb, getRawDb } from "./db";
+import { getDb } from "./db";
 import { inventory, activityLog } from "./schema";
 
 export type InventoryItem = typeof inventory.$inferSelect;
@@ -49,40 +49,31 @@ export async function getInventoryByBarcodeAndLocation(
 
 export async function addInventoryItem(item: NewInventoryItem): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
   const locationId = item.locationId ?? 1;
 
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    const existing = await getInventoryByBarcodeAndLocation(
-      item.barcode,
-      locationId
-    );
+  const existing = await getInventoryByBarcodeAndLocation(
+    item.barcode,
+    locationId
+  );
 
-    if (existing) {
-      await db
-        .update(inventory)
-        .set({
-          quantity: existing.quantity + (item.quantity ?? 0),
-          updatedAt: nowTimestamp(),
-        })
-        .where(eq(inventory.id, existing.id));
-    } else {
-      await db.insert(inventory).values({ ...item, locationId });
-    }
-
-    await db.insert(activityLog).values({
-      barcode: item.barcode,
-      action: "ADD",
-      quantityChange: item.quantity,
-      locationId,
-    });
-
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
-    throw e;
+  if (existing) {
+    await db
+      .update(inventory)
+      .set({
+        quantity: existing.quantity + (item.quantity ?? 0),
+        updatedAt: nowTimestamp(),
+      })
+      .where(eq(inventory.id, existing.id));
+  } else {
+    await db.insert(inventory).values({ ...item, locationId });
   }
+
+  await db.insert(activityLog).values({
+    barcode: item.barcode,
+    action: "ADD",
+    quantityChange: item.quantity,
+    locationId,
+  });
 }
 
 export async function removeQuantity(
@@ -91,33 +82,24 @@ export async function removeQuantity(
   locationId: number = 1
 ): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
 
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    const item = await getInventoryByBarcodeAndLocation(barcode, locationId);
-    if (!item) throw new Error(`Το είδος με barcode ${barcode} δεν βρέθηκε`);
+  const item = await getInventoryByBarcodeAndLocation(barcode, locationId);
+  if (!item) throw new Error(`Το είδος με barcode ${barcode} δεν βρέθηκε`);
 
-    const newQty = Math.max(0, item.quantity - amount);
-    const actualRemoved = item.quantity - newQty;
+  const newQty = Math.max(0, item.quantity - amount);
+  const actualRemoved = item.quantity - newQty;
 
-    await db
-      .update(inventory)
-      .set({ quantity: newQty, updatedAt: nowTimestamp() })
-      .where(eq(inventory.id, item.id));
+  await db
+    .update(inventory)
+    .set({ quantity: newQty, updatedAt: nowTimestamp() })
+    .where(eq(inventory.id, item.id));
 
-    await db.insert(activityLog).values({
-      barcode,
-      action: "REMOVE",
-      quantityChange: -actualRemoved,
-      locationId,
-    });
-
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
-    throw e;
-  }
+  await db.insert(activityLog).values({
+    barcode,
+    action: "REMOVE",
+    quantityChange: -actualRemoved,
+    locationId,
+  });
 }
 
 export async function updateInventoryItem(
@@ -125,60 +107,42 @@ export async function updateInventoryItem(
   updates: { barcode?: string; description?: string; quantity?: number }
 ): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
 
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    const item = (
-      await db.select().from(inventory).where(eq(inventory.id, id))
-    )[0];
-    if (!item) throw new Error(`Το είδος με id ${id} δεν βρέθηκε`);
+  const item = (
+    await db.select().from(inventory).where(eq(inventory.id, id))
+  )[0];
+  if (!item) throw new Error(`Το είδος με id ${id} δεν βρέθηκε`);
 
-    await db
-      .update(inventory)
-      .set({ ...updates, updatedAt: nowTimestamp() })
-      .where(eq(inventory.id, id));
+  await db
+    .update(inventory)
+    .set({ ...updates, updatedAt: nowTimestamp() })
+    .where(eq(inventory.id, id));
 
-    await db.insert(activityLog).values({
-      barcode: updates.barcode ?? item.barcode,
-      action: "EDIT",
-      quantityChange:
-        updates.quantity != null ? updates.quantity - item.quantity : null,
-      locationId: item.locationId,
-    });
-
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
-    throw e;
-  }
+  await db.insert(activityLog).values({
+    barcode: updates.barcode ?? item.barcode,
+    action: "EDIT",
+    quantityChange:
+      updates.quantity != null ? updates.quantity - item.quantity : null,
+    locationId: item.locationId,
+  });
 }
 
 export async function deleteInventoryItem(id: number): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
 
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    const item = (
-      await db.select().from(inventory).where(eq(inventory.id, id))
-    )[0];
-    if (!item) throw new Error(`Το είδος με id ${id} δεν βρέθηκε`);
+  const item = (
+    await db.select().from(inventory).where(eq(inventory.id, id))
+  )[0];
+  if (!item) throw new Error(`Το είδος με id ${id} δεν βρέθηκε`);
 
-    await db.insert(activityLog).values({
-      barcode: item.barcode,
-      action: "DELETE",
-      quantityChange: -item.quantity,
-      locationId: item.locationId,
-    });
+  await db.insert(activityLog).values({
+    barcode: item.barcode,
+    action: "DELETE",
+    quantityChange: -item.quantity,
+    locationId: item.locationId,
+  });
 
-    await db.delete(inventory).where(eq(inventory.id, id));
-
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
-    throw e;
-  }
+  await db.delete(inventory).where(eq(inventory.id, id));
 }
 
 export async function transferItem(
@@ -188,82 +152,64 @@ export async function transferItem(
   quantity: number
 ): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
 
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    const source = await getInventoryByBarcodeAndLocation(
-      barcode,
-      fromLocationId
-    );
-    if (!source) throw new Error("Το είδος προέλευσης δεν βρέθηκε");
-    if (source.quantity < quantity) throw new Error("Ανεπαρκής ποσότητα");
+  const source = await getInventoryByBarcodeAndLocation(
+    barcode,
+    fromLocationId
+  );
+  if (!source) throw new Error("Το είδος προέλευσης δεν βρέθηκε");
+  if (source.quantity < quantity) throw new Error("Ανεπαρκής ποσότητα");
 
-    // Decrement source
+  // Decrement source
+  await db
+    .update(inventory)
+    .set({
+      quantity: source.quantity - quantity,
+      updatedAt: nowTimestamp(),
+    })
+    .where(eq(inventory.id, source.id));
+
+  // Increment or create destination
+  const dest = await getInventoryByBarcodeAndLocation(barcode, toLocationId);
+  if (dest) {
     await db
       .update(inventory)
       .set({
-        quantity: source.quantity - quantity,
+        quantity: dest.quantity + quantity,
         updatedAt: nowTimestamp(),
       })
-      .where(eq(inventory.id, source.id));
-
-    // Increment or create destination
-    const dest = await getInventoryByBarcodeAndLocation(barcode, toLocationId);
-    if (dest) {
-      await db
-        .update(inventory)
-        .set({
-          quantity: dest.quantity + quantity,
-          updatedAt: nowTimestamp(),
-        })
-        .where(eq(inventory.id, dest.id));
-    } else {
-      const nextSort = await getNextSortOrder();
-      await db.insert(inventory).values({
-        barcode: source.barcode,
-        description: source.description,
-        quantity,
-        locationId: toLocationId,
-        sortOrder: nextSort,
-      });
-    }
-
-    // Log transfer
-    await db.insert(activityLog).values({
-      barcode,
-      action: "TRANSFER",
-      quantityChange: quantity,
-      locationId: fromLocationId,
-      toLocationId,
+      .where(eq(inventory.id, dest.id));
+  } else {
+    const nextSort = await getNextSortOrder();
+    await db.insert(inventory).values({
+      barcode: source.barcode,
+      description: source.description,
+      quantity,
+      locationId: toLocationId,
+      sortOrder: nextSort,
     });
-
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
-    throw e;
   }
+
+  // Log transfer
+  await db.insert(activityLog).values({
+    barcode,
+    action: "TRANSFER",
+    quantityChange: quantity,
+    locationId: fromLocationId,
+    toLocationId,
+  });
 }
 
 export async function updateSortOrder(
   updates: { id: number; sortOrder: number }[]
 ): Promise<void> {
   const db = getDb();
-  const sqlite = getRawDb();
 
-  await sqlite.execute("BEGIN TRANSACTION");
-  try {
-    for (const { id, sortOrder } of updates) {
-      await db
-        .update(inventory)
-        .set({ sortOrder })
-        .where(eq(inventory.id, id));
-    }
-
-    await sqlite.execute("COMMIT");
-  } catch (e) {
-    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
-    throw e;
+  for (const { id, sortOrder } of updates) {
+    await db
+      .update(inventory)
+      .set({ sortOrder })
+      .where(eq(inventory.id, id));
   }
 }
 

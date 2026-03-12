@@ -57,7 +57,7 @@ Backup configuration stored in the existing `settings` table:
 
 1. **`createBackup()`** — Copies `storage.db` to the backup folder with a timestamped filename. Uses `fs.copyFile()`. Returns the backup path on success. Updates `backup_last_time` in settings.
 
-2. **`listBackups()`** — Reads the backup folder with `fs.readDir()`, filters for `storage_backup_*.db` and `storage_prerestore_*.db` files, returns them sorted newest-first with filename, date (parsed from filename), file size, and type (regular vs pre-restore).
+2. **`listBackups()`** — Reads the backup folder with `fs.readDir()`, filters for `storage_backup_*.db` and `storage_prerestore_*.db` files, returns them sorted newest-first with filename, date (parsed from filename), and type (regular vs pre-restore). Note: file size is omitted because Tauri v2's `readDir` does not provide it without additional `stat` calls, and it's not essential for the UI.
 
 3. **`rotateBackups()`** — Called after each backup. Lists regular backups (not pre-restore), deletes the oldest ones beyond `backup_max_count` using `fs.remove()`. Pre-restore backups are exempt from rotation.
 

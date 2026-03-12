@@ -165,3 +165,11 @@ export function getRawDb() {
   if (!_sqlite) throw new Error("Database not initialized. Call initDatabase() first.");
   return _sqlite;
 }
+
+export async function closeDatabase() {
+  if (_sqlite) {
+    await _sqlite.close();
+  }
+  _sqlite = null;
+  _db = null;
+}

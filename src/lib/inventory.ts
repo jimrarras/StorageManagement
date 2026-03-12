@@ -80,7 +80,7 @@ export async function addInventoryItem(item: NewInventoryItem): Promise<void> {
 
     await sqlite.execute("COMMIT");
   } catch (e) {
-    await sqlite.execute("ROLLBACK");
+    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
 }
@@ -115,7 +115,7 @@ export async function removeQuantity(
 
     await sqlite.execute("COMMIT");
   } catch (e) {
-    await sqlite.execute("ROLLBACK");
+    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
 }
@@ -149,7 +149,7 @@ export async function updateInventoryItem(
 
     await sqlite.execute("COMMIT");
   } catch (e) {
-    await sqlite.execute("ROLLBACK");
+    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
 }
@@ -176,7 +176,7 @@ export async function deleteInventoryItem(id: number): Promise<void> {
 
     await sqlite.execute("COMMIT");
   } catch (e) {
-    await sqlite.execute("ROLLBACK");
+    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
 }
@@ -240,7 +240,7 @@ export async function transferItem(
 
     await sqlite.execute("COMMIT");
   } catch (e) {
-    await sqlite.execute("ROLLBACK");
+    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
 }
@@ -262,7 +262,7 @@ export async function updateSortOrder(
 
     await sqlite.execute("COMMIT");
   } catch (e) {
-    await sqlite.execute("ROLLBACK");
+    try { await sqlite.execute("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
 }

@@ -103,7 +103,7 @@ The WAL checkpoint is executed via `getRawDb().execute("PRAGMA wal_checkpoint(TR
 
 ### Error Handling
 
-If step 5 (initDatabase) fails due to a corrupt or incompatible backup file, the system automatically restores the pre-restore safety backup and shows an error message. This makes restore a zero-risk operation.
+If step 6 (initDatabase) fails due to a corrupt or incompatible backup file, the system automatically restores the pre-restore safety backup and shows an error message. This makes restore a zero-risk operation.
 
 ### Pre-Restore Backups
 

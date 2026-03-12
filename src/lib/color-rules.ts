@@ -5,8 +5,15 @@ import { colorRules } from "./schema";
 export type ColorRule = typeof colorRules.$inferSelect;
 
 export async function getAllColorRules(): Promise<ColorRule[]> {
-  const db = getDb();
-  return db.select().from(colorRules).orderBy(colorRules.sortOrder);
+  const raw = await getRawDb().select<
+    { id: number; keyword: string; color: string; sort_order: number }[]
+  >("SELECT id, keyword, color, sort_order FROM color_rules ORDER BY sort_order", []);
+  return raw.map((r) => ({
+    id: r.id,
+    keyword: r.keyword,
+    color: r.color,
+    sortOrder: r.sort_order,
+  }));
 }
 
 export async function addColorRule(keyword: string, color: string): Promise<void> {

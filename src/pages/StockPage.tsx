@@ -1,17 +1,18 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { ItemDialog } from "@/components/inventory/ItemDialog";
 import { useInventory } from "@/hooks/useInventory";
 import { useLocations } from "@/hooks/useLocations";
 import { LocationFilter } from "@/components/inventory/LocationFilter";
-import { Plus, Pencil, Trash2, FileSpreadsheet, ArrowRightLeft } from "lucide-react";
+import { Plus, FileSpreadsheet, ArrowRightLeft } from "lucide-react";
 import { exportInventoryXlsx } from "@/lib/export";
-import { transferItem as doTransfer } from "@/lib/inventory";
+import { transferItem as doTransfer, deleteInventoryItem } from "@/lib/inventory";
 import type { InventoryItem } from "@/lib/inventory";
 import { TransferDialog } from "@/components/inventory/TransferDialog";
 import { useColorRules } from "@/hooks/useColorRules";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { BulkActionBar } from "@/components/inventory/BulkActionBar";
 
 interface StockPageProps {
   searchQuery: string;
@@ -20,12 +21,13 @@ interface StockPageProps {
 export function StockPage({ searchQuery }: StockPageProps) {
   const [locationId, setLocationId] = useState<number | undefined>(undefined);
   const { locations } = useLocations();
-  const { items, loading, addItem, editItem, deleteItem, search, reorder, refresh } = useInventory(locationId);
+  const { items, loading, addItem, editItem, search, reorder, refresh } = useInventory(locationId);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [transferTarget, setTransferTarget] = useState<InventoryItem | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const locationMap = useMemo(
     () => new Map(locations.map((l) => [l.id, l.name])),
@@ -33,6 +35,11 @@ export function StockPage({ searchQuery }: StockPageProps) {
   );
 
   const { getItemColor } = useColorRules();
+
+  // Clear checked state on filter/search change
+  useEffect(() => {
+    setCheckedIds(new Set());
+  }, [searchQuery, locationId]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -51,29 +58,38 @@ export function StockPage({ searchQuery }: StockPageProps) {
   const handleAdd = async (data: { barcode: string; description: string; quantity: number }) => {
     try {
       await addItem(data.barcode, data.description, data.quantity);
-      setDialogMode(null);
+      setDialogOpen(false);
     } catch (err) {
       setErrorMsg(`Αποτυχία προσθήκης είδους: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
-  const handleEdit = async (data: { barcode: string; description: string; quantity: number }) => {
-    if (!selectedItem) return;
+  const handleEditSave = useCallback(async (id: number, updates: { barcode: string; description: string; quantity: number }) => {
     try {
-      await editItem(selectedItem.id, data);
-      setDialogMode(null);
+      await editItem(id, updates);
     } catch (err) {
       setErrorMsg(`Αποτυχία επεξεργασίας είδους: ${err instanceof Error ? err.message : String(err)}`);
+      throw err; // Re-throw so InventoryTable keeps edit mode open
     }
-  };
+  }, [editItem]);
 
-  const handleDelete = async () => {
-    if (!selectedItem) return;
-    try {
-      await deleteItem(selectedItem.id);
-      setSelectedItem(null);
-    } catch (err) {
-      setErrorMsg(`Αποτυχία διαγραφής είδους: ${err instanceof Error ? err.message : String(err)}`);
+  const handleBulkDelete = async () => {
+    const ids = Array.from(checkedIds);
+    const failedIds = new Set<number>();
+    const errors: string[] = [];
+    for (const id of ids) {
+      try {
+        await deleteInventoryItem(id);
+      } catch (err) {
+        failedIds.add(id);
+        errors.push(err instanceof Error ? err.message : String(id));
+      }
+    }
+    setCheckedIds(failedIds);
+    setSelectedItem(null);
+    await refresh();
+    if (errors.length > 0) {
+      setErrorMsg(`Αποτυχία διαγραφής ${errors.length} ειδών.`);
     }
   };
 
@@ -89,14 +105,8 @@ export function StockPage({ searchQuery }: StockPageProps) {
             onChange={setLocationId}
             locations={locations}
           />
-          <Button size="sm" onClick={() => { setDialogMode("add"); setSelectedItem(null); }}>
+          <Button size="sm" onClick={() => { setDialogOpen(true); setSelectedItem(null); }}>
             <Plus className="mr-1 h-4 w-4" /> Προσθήκη Είδους
-          </Button>
-          <Button size="sm" variant="outline" disabled={!selectedItem} onClick={() => setDialogMode("edit")}>
-            <Pencil className="mr-1 h-4 w-4" /> Επεξεργασία
-          </Button>
-          <Button size="sm" variant="destructive" disabled={!selectedItem} onClick={() => setConfirmDelete(true)}>
-            <Trash2 className="mr-1 h-4 w-4" /> Διαγραφή
           </Button>
           {selectedItem && locations.length >= 2 && (
             <Button size="sm" variant="outline" onClick={() => setTransferTarget(selectedItem)}>
@@ -121,19 +131,26 @@ export function StockPage({ searchQuery }: StockPageProps) {
         isFiltering={!!searchQuery}
         disableDrag={locationId == null}
         onRowClick={setSelectedItem}
-        onRowDoubleClick={(item) => { setSelectedItem(item); setDialogMode("edit"); }}
         onReorder={reorder}
+        onEditSave={handleEditSave}
         locationMap={locationMap}
         getItemColor={getItemColor}
         selectedId={selectedItem?.id ?? null}
+        checkedIds={checkedIds}
+        onCheckedIdsChange={setCheckedIds}
+      />
+
+      <BulkActionBar
+        count={checkedIds.size}
+        onDelete={() => setConfirmBulkDelete(true)}
+        onDeselectAll={() => setCheckedIds(new Set())}
       />
 
       <ItemDialog
-        open={dialogMode !== null}
-        onClose={() => setDialogMode(null)}
-        onSubmit={dialogMode === "edit" ? handleEdit : handleAdd}
-        initialData={dialogMode === "edit" && selectedItem ? selectedItem : undefined}
-        title={dialogMode === "edit" ? "Επεξεργασία Είδους" : "Προσθήκη Είδους"}
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleAdd}
+        title="Προσθήκη Είδους"
       />
 
       <TransferDialog
@@ -148,13 +165,13 @@ export function StockPage({ searchQuery }: StockPageProps) {
       />
 
       <ConfirmDialog
-        open={confirmDelete}
-        onOpenChange={setConfirmDelete}
-        title="Διαγραφή Είδους"
-        description="Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το είδος; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί."
+        open={confirmBulkDelete}
+        onOpenChange={setConfirmBulkDelete}
+        title="Διαγραφή Ειδών"
+        description={`Θέλετε να διαγράψετε ${checkedIds.size} είδη; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.`}
         confirmLabel="Διαγραφή"
         variant="destructive"
-        onConfirm={handleDelete}
+        onConfirm={handleBulkDelete}
       />
     </div>
   );

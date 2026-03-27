@@ -46,3 +46,6 @@ src-tauri/gen/
 
 # Superpowers brainstorm mockups
 .superpowers/
+
+# Data exports
+*.csv
